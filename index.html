@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JACK1 LENS · 종목 입력 → 7대 프레임 분석</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#c9a84c;--green:#10b981;--red:#f87171;--blue:#4a9eff}
+*{box-sizing:border-box}
+body{font-family:'Outfit',sans-serif;background:#080c12;min-height:100vh;color:#e2e8f0;margin:0}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 10% 0%,rgba(16,185,129,.06),transparent 60%),radial-gradient(ellipse 60% 40% at 90% 100%,rgba(201,168,76,.05),transparent 60%);z-index:0}
+.glass{background:rgba(255,255,255,.04);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.09)}
+.glass-strong{background:rgba(255,255,255,.07);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,.12)}
+.mono{font-family:'DM Mono',monospace}
+.card{max-width:1000px;margin:0 auto;padding:0 20px}
+.btn-primary{background:var(--green);color:#000;font-weight:700;border-radius:12px;padding:12px 24px;font-size:15px;cursor:pointer;border:none;transition:.2s}
+.btn-primary:hover{background:#059669}.btn-primary:disabled{opacity:.5;cursor:wait}
+.btn-ghost{background:rgba(255,255,255,.07);color:#e2e8f0;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:9px 16px;font-size:13px;cursor:pointer}
+.btn-ghost:hover{background:rgba(255,255,255,.12)}
+input{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#e2e8f0;padding:10px 13px;font-family:'Outfit';font-size:14px;outline:none}
+input:focus{border-color:var(--green)}
+label{font-size:11px;color:#64748b;letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:5px}
+.sec{border-radius:18px;padding:22px;margin-bottom:16px}
+.sec h3{font-family:'Syne';font-size:16px;font-weight:700;margin:0 0 3px;display:flex;align-items:center;gap:8px}
+.sec .sub{font-size:11px;color:#64748b;margin-bottom:14px}
+.num{display:inline-flex;width:24px;height:24px;border-radius:7px;background:rgba(16,185,129,.15);color:var(--green);font-size:12px;font-weight:700;align-items:center;justify-content:center}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:td 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,80%,100%{opacity:.2}40%{opacity:1}}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid rgba(255,255,255,.06)}
+th{color:#475569;font-size:10px;font-weight:600;text-transform:uppercase}
+.modal{position:fixed;inset:0;background:rgba(8,12,18,.96);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center}
+.step{font-size:11px;color:#475569;display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.step.on{color:var(--green)}.step.done{color:#94a3b8}
+</style>
+</head>
+<body>
+
+<!-- 게이트 -->
+<div id="gate" class="modal">
+  <div class="glass-strong" style="border-radius:20px;padding:34px;width:92%;max-width:420px;text-align:center">
+    <div style="width:52px;height:52px;background:linear-gradient(135deg,#10b981,#059669);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 16px">🔬</div>
+    <div style="font-family:'Syne';font-size:22px;font-weight:800;margin-bottom:6px">JACK1 LENS</div>
+    <p style="font-size:13px;color:#94a3b8;line-height:1.6;margin:0 0 18px">초대받은 분 전용입니다.<br>받으신 <b style="color:#10b981">초대코드</b>를 입력하세요.</p>
+    <input id="gate-input" placeholder="초대코드" onkeydown="if(event.key==='Enter')submitGate()" style="width:100%;text-align:center;font-family:'DM Mono',monospace;letter-spacing:.1em;margin-bottom:12px">
+    <div id="gate-err" style="font-size:12px;color:#f87171;min-height:16px;margin-bottom:10px"></div>
+    <button onclick="submitGate()" id="gate-btn" class="btn-primary" style="width:100%">입장</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="glass" style="position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,255,255,.08)">
+  <div class="card" style="height:60px;display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:34px;height:34px;background:linear-gradient(135deg,#10b981,#059669);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px">🔬</div>
+      <div><div style="font-family:'Syne';font-size:18px;font-weight:800;line-height:1">JACK1 LENS</div><div style="font-size:8px;color:var(--green);letter-spacing:.16em">7-FRAME ANALYZER</div></div>
+    </div>
+    <button onclick="openKey()" class="btn-ghost" style="font-size:12px;padding:6px 12px"><span id="key-status">AI</span></button>
+  </div>
+</nav>
+
+<div class="card" style="padding:34px 20px 60px;position:relative;z-index:1">
+
+  <!-- 입력 -->
+  <div class="glass-strong sec" style="border:1px solid rgba(16,185,129,.22)">
+    <h3>종목 입력 <span style="font-size:11px;color:#64748b;font-weight:400">3~8개</span></h3>
+    <div class="sub">티커(선택: 현재 비중%)를 넣고 분석하면 — 단계·타임버킷·자금줄·거시테마·어닝·밸류체인·비중전략 7가지를 한 번에 구조화합니다. 추천이 아니라 정해진 틀의 적용입니다.</div>
+    <div id="rows"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button onclick="addRow()" id="addBtn" class="btn-ghost"><i class="fa-solid fa-plus"></i> 종목 추가</button>
+      <button onclick="runAll()" id="runBtn" class="btn-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> 7대 프레임 분석</button>
+    </div>
+    <div id="inErr" style="font-size:12px;color:#f87171;margin-top:10px;min-height:14px"></div>
+    <div id="progress" style="margin-top:12px;display:none"></div>
+  </div>
+
+  <div id="results"></div>
+
+  <div id="buildPanel" class="glass-strong sec" style="display:none;border:1px solid rgba(201,168,76,.3);text-align:center">
+    <h3 style="justify-content:center"><i class="fa-solid fa-gauge-high" style="color:var(--gold)"></i> 이 분석으로 내 대시보드 구성</h3>
+    <div class="sub" style="text-align:center">위 7대 분석을 바탕으로 JACK1 포트폴리오 대시보드(종목인사이트·전략단계·어닝·리밸런싱)를 당신 종목으로 자동 구성합니다.</div>
+    <button onclick="buildDashboard()" id="buildBtn" class="btn-primary" style="background:var(--gold)"><i class="fa-solid fa-arrow-right"></i> 대시보드 생성 →</button>
+    <div id="buildErr" style="font-size:12px;color:#f87171;margin-top:10px;min-height:14px"></div>
+  </div>
+
+  <div id="disclaimer" style="display:none;font-size:11px;color:#334155;text-align:center;line-height:1.6;margin-top:20px">
+    ⚠ 본 도구는 이용자가 선정한 종목을 정해진 분석 틀로 구조화하는 분석·교육 도구입니다. 특정 종목의 매수·매도·비중을 권유하지 않으며, 모든 판단과 책임은 이용자 본인에게 있습니다. 추정치는 IR·공시로 재확인하세요.
+  </div>
+</div>
+
+<!-- KEY MODAL -->
+<div id="keyModal" class="modal" onclick="if(event.target===this)this.style.display='none'">
+  <div class="glass-strong" style="border-radius:18px;padding:26px;width:92%;max-width:420px">
+    <div style="font-family:'Syne';font-size:17px;font-weight:700;margin-bottom:8px">AI 설정 (선택)</div>
+    <p style="font-size:12px;color:#64748b;line-height:1.6;margin:0 0 14px">기본은 운영자 제공으로 바로 사용됩니다. 본인 Groq 키를 쓰려면 입력하세요(브라우저에만 저장). <a href="https://console.groq.com/keys" target="_blank" style="color:#10b981">무료 발급</a></p>
+    <input id="keyInput" type="password" placeholder="gsk_..." style="width:100%;margin-bottom:12px">
+    <div style="display:flex;gap:8px"><button onclick="document.getElementById('keyModal').style.display='none'" class="btn-ghost" style="flex:1">취소</button><button onclick="saveKey()" class="btn-primary" style="flex:2">저장</button></div>
+  </div>
+</div>
+
+<script>
+const GROQ_URL='https://api.groq.com/openai/v1/chat/completions',GROQ_MODEL='llama-3.3-70b-versatile';
+const PROXY_URL='https://jack1-lens.kjk02468.workers.dev';
+let apiKey=localStorage.getItem('j1lens_key')||'';
+let accessCode=localStorage.getItem('j1lens_code')||'';
+function aiReady(){return !!apiKey||!!PROXY_URL;}
+function openKey(){document.getElementById('keyInput').value=apiKey;document.getElementById('keyModal').style.display='flex';}
+function saveKey(){apiKey=document.getElementById('keyInput').value.trim();localStorage.setItem('j1lens_key',apiKey);document.getElementById('keyModal').style.display='none';updKey();}
+function updKey(){document.getElementById('key-status').textContent=apiKey?'내 키':'AI';}
+
+/* ── 프레임 정의 (운영자 틀, 종목 비종속) ── */
+const FRAME=`[분석 틀 — 반드시 이 정의로만 분류]
+· 단계(0~4): 0관찰(테제 가설) / 1바닥·신호(저점 다지기·초기 신호) / 2점화·확인(추정치 상향 시작·돌파) / 3런업·촉매(추세 확정·실적 검증·런업) / 4과열·고점(주가>목표가·환희·과열).
+· 롤링 타임버킷(테제가 re-rating으로 보상받는 시기): 2027 TARGET=하이퍼스케일러 AI capex 직접 수혜 코어(보통 3~4단계). 2028 TARGET=독립 체인 위성(분산·3단계). 2029 TARGET=내러티브 초입 선행 베팅(2~3단계).
+· 자금줄(같은 줄=같은 운명): AI capex / 금리·듀레이션(고멀티플·pre-profit) / 정부예산·국방 / 에너지·전력 / 소비 / 결제 / 헬스 / 양자 등. capex '수취자'(현금 지금)인지 '지출자'(적자·희석)인지도.
+· 밸류체인 위치: 상류 병목(공급제약·마진 고임) / 중류 / 하류 범용(가격경쟁). 병목일수록 가격결정력↑.
+· 비중 규율: 단계 높을수록(검증) 비중 가능하나 4단계 과열은 추격 금지 / 단일종목 상한 ~18% / 같은 자금줄 합산 집중 경계 / pre-profit·고멀티플 과다 시 금리 리스크 / 수취자 우선.
+· 현 레짐(2026-06): 매파 FOMC(점도표 인상)↔이란 진정·유가 하락 충돌. AI capex ROI는 잔존위험(AVGO 미스). 금리·인플레는 개선 방향.
+· 한국 종목 지원: 6자리 코드(예 005930)나 한글명(예 삼성전자·에코프로비엠)도 분석. 국내 종목이면 미국 대신 KOSPI/KOSDAQ·원화·국내 거시(한은 기준금리·원달러 환율·반도체 수출·중국 수요)로 자금줄/거시를 해석. 종목명만으로 불명확하면 추정임을 밝혀라.
+★규칙: 매수/매도/보유 권유 금지. "이 틀로 보면~"으로만. 일반론 금지, 종목 고유 사업모델 기준. 모르면 모른다고. 마크다운 별표 금지.`;
+
+async function callLLM(prompt,maxTokens){
+  if(!aiReady())throw new Error('AI 사용 불가 — 운영자 문의 또는 본인 키 등록');
+  const useProxy=!apiKey;const SYS='당신은 연봉 100억 수준 월가 PM입니다. 추천 금지, 분석 틀로만 구조화. 2~3차 파급까지. 한국어 간결.';
+  for(let a=0;a<=2;a++){
+    const r=useProxy
+      ?await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt,system:SYS,max_tokens:Math.max(1000,+maxTokens||0),code:accessCode})})
+      :await fetch(GROQ_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify({model:GROQ_MODEL,messages:[{role:'system',content:SYS},{role:'user',content:prompt}],max_tokens:Math.max(1000,+maxTokens||0),temperature:.6})});
+    if(useProxy&&r.status===401){showGate(true);throw new Error('초대코드 만료/무효 — 운영자 문의');}
+    if(r.ok){const d=await r.json();if(d.error)throw new Error(d.error.message);return d.choices?.[0]?.message?.content||'';}
+    if(r.status===429&&a<2){await new Promise(s=>setTimeout(s,6000*(a+1)));continue;}
+    const d=await r.json().catch(()=>({}));throw new Error(d.error?.message||('HTTP '+r.status));
+  }
+}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function fmt(t){return esc(t).split('\n').filter(l=>l.trim()).map(l=>{const m=l.match(/^([가-힣A-Za-z0-9·\/\s\.]{1,18}):\s*(.+)/);return m?`<div style="margin-bottom:6px"><b style="color:#10b981">${m[1]}:</b> ${m[2]}</div>`:`<div style="margin-bottom:5px">${l}</div>`;}).join('');}
+
+/* ── 입력 행 ── */
+let rows=JSON.parse(localStorage.getItem('j1lens_rows')||'[]');
+if(!rows.length)rows=[{tk:'',wt:''},{tk:'',wt:''},{tk:'',wt:''}];
+function renderRows(){
+  const el=document.getElementById('rows');
+  el.innerHTML=`<div style="display:flex;gap:8px;margin-bottom:5px;font-size:10px;color:#475569"><span style="flex:0 0 150px">티커</span><span style="flex:0 0 120px">비중%(선택)</span></div>`+
+  rows.map((r,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+    <input value="${r.tk}" placeholder="예: PLTR · 005930 · 삼성전자" maxlength="14" oninput="rows[${i}].tk=this.value.toUpperCase().replace(/[^0-9A-Z가-힣.\\- ]/g,'');this.value=rows[${i}].tk;saveRows()" class="mono" style="flex:0 0 200px">
+    <input value="${r.wt}" type="number" placeholder="비중%" oninput="rows[${i}].wt=this.value;saveRows()" style="flex:0 0 120px">
+    ${rows.length>3?`<button onclick="rows.splice(${i},1);saveRows();renderRows()" class="btn-ghost" style="padding:8px 11px">✕</button>`:''}
+  </div>`).join('');
+  document.getElementById('addBtn').style.display=rows.length>=8?'none':'';
+}
+function addRow(){if(rows.length<8){rows.push({tk:'',wt:''});renderRows();}}
+function saveRows(){localStorage.setItem('j1lens_rows',JSON.stringify(rows));}
+
+/* ── 7대 프레임 분석 오케스트레이션 ── */
+const STEPS=[
+  {key:'cls',label:'① 단계·타임버킷·자금줄·밸류체인 분류'},
+  {key:'macro',label:'④ 거시/테마 분석'},
+  {key:'earn',label:'⑤ 어닝 캘린더'},
+  {key:'weight',label:'⑦ 비중·리밸런싱·전략단계'},
+];
+function setProgress(idx){
+  const p=document.getElementById('progress');p.style.display='block';
+  p.innerHTML=STEPS.map((s,i)=>{const ic=i<idx?'✓':i===idx?'<span class="typing-dot"></span>':'○';return '<div class="step '+(i<idx?'done':i===idx?'on':'')+'">'+ic+' '+s.label+'</div>';}).join('');
+}
+async function runAll(){
+  const inErr=document.getElementById('inErr');
+  const valid=rows.filter(r=>r.tk.trim());
+  if(valid.length<3){inErr.textContent='최소 3개 종목을 입력하세요.';return;}
+  if(valid.length>8){inErr.textContent='최대 8개까지 가능합니다.';return;}
+  const seen={};for(const r of valid){if(seen[r.tk]){inErr.textContent='중복: '+r.tk;return;}seen[r.tk]=1;}
+  if(!aiReady()){openKey();return;}
+  inErr.textContent='';
+  const btn=document.getElementById('runBtn');btn.disabled=true;
+  const res=document.getElementById('results');res.innerHTML='';
+  document.getElementById('disclaimer').style.display='block';
+  const tks=valid.map(r=>r.tk);
+  const wts=valid.map(r=>r.tk+(r.wt?`(${r.wt}%)`:'')).join('·');
+  const list=tks.join('·');
+  try{
+    // STEP 1 — 분류 테이블 (요건 1,2,3,6)
+    setProgress(0);
+    const cls=await callLLM(`${FRAME}
+[종목] ${list}
+각 종목을 한 줄씩, 정확히 이 형식(파이프 구분):
+티커 | 단계(숫자+한단어) | 타임버킷(2027/2028/2029)+한줄근거 | 자금줄(+수취자/지출자) | 밸류체인위치(상류병목/중류/하류)
+헤더 줄 없이 데이터만. 마지막 줄에 "요약: 이 조합의 단계분포·자금줄 집중 한 줄".`,1100);
+    renderTable(res,'1~3·6','종목 분류 — 단계 · 타임버킷 · 자금줄 · 밸류체인',cls);
+
+    // STEP 2 — 거시/테마 (요건 4)
+    setProgress(1);
+    const macro=await callLLM(`${FRAME}
+[종목] ${list}
+이 종목들과 직결된 거시경제/테마를 분석. "라벨: 내용" 줄로:
+핵심거시변수: (금리·AIcapex·유가·달러·정책 중 이 포트에 가장 중요한 것)
+현레짐정합: (지금 순풍/역풍, 왜)
+테마: (이 종목들을 관통하는 1~2개 테마)
+2차파급: (그 거시가 움직이면 일어나는 2~3차 효과)
+동시노출리스크: (같은 거시에 묶여 한꺼번에 맞는 지점)`,1000);
+    renderText(res,'4','거시/테마 분석',macro);
+
+    // STEP 3 — 어닝 캘린더 (요건 5)
+    setProgress(2);
+    const earn=await callLLM(`${FRAME}
+오늘 ${new Date().toISOString().slice(0,10)}. [종목] ${list}
+어닝 캘린더를 구조화. 각 종목 한 줄(파이프 구분):
+티커 | 다음 실적(오늘 이후 미래 분기만 'YYYY Qn', 과거·특정날짜 금지) | 이번에 볼 핵심지표 1~2 | 킬 트리거 1
+끝에 "관련이슈: 이 종목들에 영향줄 공통 거시/이벤트 일정 1~2 한 줄". 날짜는 추정—IR 재확인.`,1000);
+    renderTable(res,'5','어닝 캘린더',earn);
+
+    // STEP 4 — 비중·리밸런싱·전략단계 (요건 7)
+    setProgress(3);
+    const weight=await callLLM(`${FRAME}
+[종목·현재비중] ${wts}
+이 종목들의 특징(단계·자금줄·수취/지출·밸류체인)을 종합해 비중 전략을 틀로 제시. "라벨: 내용"으로:
+단계별비중원칙: (각 종목 단계 고려한 합리적 비중 범위 — 추천 아닌 틀의 산출)
+집중도진단: (단일종목 상한·같은 자금줄 합산·pre-profit 비중 경고)
+리밸런싱: (현재비중 입력됐으면 어디 줄이고 늘릴지 방향, 없으면 목표비중 제안)
+전략단계구성: (코어/위성/선행 버킷으로 어떻게 배치)
+실행주의: (현 레짐에서 조심할 점). 매수/매도 종목 단정 금지.`,1100);
+    renderText(res,'7','비중 · 리밸런싱 · 전략단계',weight);
+
+    document.getElementById('progress').style.display='none';
+    window._lensTks=valid;
+    document.getElementById('buildPanel').style.display='block';
+  }catch(e){
+    document.getElementById('progress').innerHTML=`<div style="color:#f87171;font-size:13px">⚠ ${e.message}</div>`;
+  }finally{btn.disabled=false;}
+}
+function secHead(n,title){return `<h3><span class="num">${n}</span> ${title}</h3>`;}
+function renderText(parent,n,title,txt){
+  const d=document.createElement('div');d.className='glass sec';
+  d.innerHTML=secHead(n,title)+'<div style="font-size:13px;line-height:1.8;color:#94a3b8">'+fmt(txt)+'</div>';
+  parent.appendChild(d);
+}
+function renderTable(parent,n,title,txt){
+  const lines=txt.split('\n').map(l=>l.trim()).filter(Boolean);
+  const rowsP=lines.filter(l=>l.includes('|'));
+  const notes=lines.filter(l=>!l.includes('|'));
+  let html=secHead(n,title);
+  if(rowsP.length){
+    const cols=rowsP[0].split('|').length;
+    const heads=n.startsWith('1')?['종목','단계','타임버킷','자금줄','밸류체인']:['종목','다음실적','핵심지표','킬 트리거'];
+    html+='<div style="overflow-x:auto"><table><thead><tr>'+heads.slice(0,cols).map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>'+
+      rowsP.map(r=>{const c=r.split('|').map(x=>esc(x.trim()));return '<tr>'+c.map((x,i)=>`<td${i===0?' class="mono" style="color:#c9a84c;font-weight:700"':''}>${x}</td>`).join('')+'</tr>';}).join('')+
+      '</tbody></table></div>';
+  }
+  if(notes.length)html+='<div style="font-size:12px;color:#94a3b8;margin-top:10px;line-height:1.7">'+fmt(notes.join('\n'))+'</div>';
+  const d=document.createElement('div');d.className='glass sec';d.innerHTML=html;parent.appendChild(d);
+}
+
+/* ── 대시보드 생성: 종목별 구조화 JSON → localStorage → app.html ── */
+async function buildDashboard(){
+  const valid=window._lensTks||rows.filter(r=>r.tk.trim());
+  const err=document.getElementById('buildErr'),btn=document.getElementById('buildBtn');
+  if(!valid||valid.length<3){err.textContent='먼저 7대 분석을 실행하세요.';return;}
+  if(!aiReady()){openKey();return;}
+  btn.disabled=true;err.textContent='';btn.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span> 대시보드 데이터 생성 중...';
+  const list=valid.map(r=>r.tk).join('·');
+  try{
+    const raw=await callLLM(`${FRAME}
+[종목] ${list}
+아래 종목들의 대시보드 데이터를 생성. 반드시 유효한 JSON만 출력(설명·마크다운 금지). 스키마:
+{"holdings":[{"ticker":"","sector":"한단어","weight":숫자,"stage":0~4정수,"money":"자금줄 한단어","chain":"상류병목/중류/하류","bucket":"2027|2028|2029","pp":true_또는_false(적자·pre-profit·현금소각 종목이면 true, 흑자면 false),"note":"단계·버킷 한줄","thesis":"핵심 테제 한줄(뭘로 돈버나+해자)","bear":"약세 시나리오 한줄","watch":"추적 지표 한줄","kill":"킬 트리거 한줄","earnDate":"반드시 오늘 이후 미래 분기로 'YYYY Qn' 형식(예 2026 Q3). 특정 날짜·과거 분기 금지","earnNote":"이번 실적 핵심 한줄"}]}
+weight는 입력비중 없으면 단계·집중도 규율로 합리 배분(합 100). 모든 필드 채울 것.`,1600);
+    let g; const mm=raw.match(/\{[\s\S]*\}/); if(!mm)throw new Error('JSON 파싱 실패'); g=JSON.parse(mm[0]);
+    const H=g.holdings||[]; if(!H.length)throw new Error('데이터 비어있음');
+    const portfolio=[],targets={},stagemeta={},deepdive={},earn={},kill={};
+    H.forEach(h=>{const tk=(h.ticker||'').toUpperCase();if(!tk)return;const w=+h.weight||0;
+      portfolio.push({ticker:tk,sector:h.sector||'',avg:w||1,qty:1,price:w||1,dailyChg:0,memo:'LENS 생성'});
+      targets[tk]=w;
+      stagemeta[tk]={stage:+h.stage||0,money:h.money||'',chain:h.chain||'',note:h.note||'',bucket:h.bucket||'2028',pp:h.pp===true};
+      deepdive[tk]={thesis:h.thesis||'',bear:h.bear||'',watch:h.watch||'',ifkill:h.kill||'',hist:''};
+      earn[tk]={date:h.earnDate||'미정',note:h.earnNote||''};
+      kill[tk]=h.kill||'';
+    });
+    // 2차 콜: 성장스토리 (매출경로 + 3막 + 꺾이는 지점)
+    btn.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span> 성장 스토리 생성 중...';
+    const growth={};
+    try{
+      const raw2=await callLLM(`${FRAME}
+[종목] ${list}
+각 종목의 성장 스토리 데이터를 생성. 유효 JSON만 출력. 스키마:
+{"growth":[{"ticker":"","bucket":"2027|2028|2029","path":[{"y":"2023","v":매출추정숫자},{"y":"2024","v":},{"y":"2025","v":},{"y":"2026","v":},{"y":"2027","v":}],"acts":[{"title":"1막 현재 위치","body":"한줄"},{"title":"2막 변곡점","body":"무엇이 트리거"},{"title":"3막 종착 테제","body":"언제 검증"}],"kill":"스토리가 꺾이는 지점 한줄"}]}
+v는 매출(억달러/백만달러 일관 단위) 추정. acts는 정확히 3개. 모든 종목 채울 것.`,1600);
+      const m2=raw2.match(/\{[\s\S]*\}/);if(m2){const g2=JSON.parse(m2[0]);(g2.growth||[]).forEach(x=>{const tk=(x.ticker||'').toUpperCase();if(tk&&Array.isArray(x.path))growth[tk]={bucket:x.bucket||'2028',path:x.path,acts:(x.acts||[]).slice(0,3),kill:x.kill||''};});}
+    }catch(e){}
+    localStorage.setItem('j1lens_portfolio',JSON.stringify(portfolio));
+    localStorage.setItem('j1_rebTargets',JSON.stringify(targets));
+    localStorage.setItem('j1_stagemeta',JSON.stringify(stagemeta));
+    localStorage.setItem('j1lens_dash',JSON.stringify({deepdive,earn,kill,growth}));
+    btn.innerHTML='<i class="fa-solid fa-check"></i> 완료 — 대시보드로 이동';
+    location.href='app.html';
+  }catch(e){err.textContent='⚠ '+e.message;btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-arrow-right"></i> 대시보드 생성 →';}
+}
+
+/* ── 게이트 ── */
+function showGate(force){document.getElementById('gate').style.display='flex';if(force){accessCode='';localStorage.removeItem('j1lens_code');}}
+function hideGate(){document.getElementById('gate').style.display='none';}
+async function submitGate(){
+  const v=(document.getElementById('gate-input').value||'').trim();
+  const err=document.getElementById('gate-err'),btn=document.getElementById('gate-btn');
+  if(!v){err.textContent='코드를 입력하세요.';return;}
+  if(apiKey||!PROXY_URL){accessCode=v;localStorage.setItem('j1lens_code',v);hideGate();return;}
+  btn.disabled=true;err.textContent='';btn.textContent='확인 중...';
+  try{const r=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({verify:true,code:v})});
+    if(r.ok){accessCode=v;localStorage.setItem('j1lens_code',v);hideGate();}else{err.textContent='유효하지 않은 코드입니다.';}
+  }catch(e){err.textContent='연결 오류 — 잠시 후 다시.';}finally{btn.disabled=false;btn.textContent='입장';}
+}
+
+updKey();renderRows();
+if(PROXY_URL&&!accessCode&&!apiKey)showGate(false);
+</script>
+</body>
+</html>

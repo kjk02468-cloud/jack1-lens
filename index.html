@@ -133,7 +133,7 @@ async function callLLM(prompt,maxTokens){
     if(useProxy&&r.status===401){showGate(true);throw new Error('초대코드 만료/무효 — 운영자 문의');}
     if(r.ok){const d=await r.json();if(d.error)throw new Error(d.error.message);return d.choices?.[0]?.message?.content||'';}
     if(r.status===429&&a<2){await new Promise(s=>setTimeout(s,6000*(a+1)));continue;}
-    const d=await r.json().catch(()=>({}));throw new Error(d.error?.message||('HTTP '+r.status));
+    const d=await r.json().catch(()=>({}));throw new Error(d.error?.message||(r.status===403?'프록시 접근 거부(403) — 상단 AI 버튼에서 본인 Groq 키를 넣으면 우회됩니다':('HTTP '+r.status)));
   }
 }
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}

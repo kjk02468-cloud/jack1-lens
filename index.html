@@ -168,7 +168,7 @@ function renderRows(){
   const el=document.getElementById('rows');
   el.innerHTML=`<div style="display:flex;gap:8px;margin-bottom:5px;font-size:10px;color:#475569"><span style="flex:0 0 200px">티커</span><span style="flex:0 0 130px">${valLabel()} (선택)</span></div>`+
   rows.map((r,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
-    <input value="${r.tk}" placeholder="예: PLTR · 005930 · 삼성전자" maxlength="14" oninput="rows[${i}].tk=this.value.toUpperCase().replace(/[^0-9A-Z가-힣.\\- ]/g,'');this.value=rows[${i}].tk;saveRows()" class="mono" style="flex:0 0 200px">
+    <input value="${r.tk}" placeholder="예: PLTR · 005930 · 삼성전자" maxlength="14" oninput="tkIn(event,this,${i})" oncompositionend="tkIn(event,this,${i})" class="mono" style="flex:0 0 200px">
     <input value="${r.wt}" type="number" placeholder="${inputMode==='weight'?'비중%':(curSym()+' 금액')}" oninput="rows[${i}].wt=this.value;saveRows()" style="flex:0 0 130px">
     ${rows.length>1?`<button onclick="rows.splice(${i},1);saveRows();renderRows()" class="btn-ghost" style="padding:8px 11px">✕</button>`:''}
   </div>`).join('');
@@ -176,6 +176,16 @@ function renderRows(){
 }
 function addRow(){if(rows.length<10){rows.push({tk:'',wt:''});renderRows();}}
 function saveRows(){localStorage.setItem('j1lens_rows',JSON.stringify(rows));}
+/* 한글 IME-safe 티커 입력: 조합 중(isComposing)엔 값 건드리지 않음 → 한글 안 깨짐 */
+function tkIn(ev,el,i){
+  rows[i].tk=el.value;
+  if(!ev||!ev.isComposing){
+    const v=el.value.toUpperCase().replace(/[^0-9A-Z가-힣.\- ]/g,'');
+    if(el.value!==v)el.value=v;
+    rows[i].tk=v;
+  }
+  saveRows();
+}
 /* 입력값 → 정규화 비중%(분석·대시보드 공용). 금액모드면 합계 대비 환산. */
 function weightedValid(){
   const v=rows.filter(r=>r.tk.trim());

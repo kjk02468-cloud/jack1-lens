@@ -161,6 +161,28 @@ window.addEventListener('load',function(){ if(typeof PROXY_URL!=='undefined'&&PR
     </div>
   </div>
 
+  <!-- 단계 시스템 가이드 (처음 사용자용 · 접이식) -->
+  <div id="stageGuide" class="glass" style="border-radius:18px;margin-bottom:20px;border:1px solid rgba(16,185,129,.2);overflow:hidden">
+    <div onclick="toggleGuide()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:15px 20px">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px">📘 처음이신가요? — 0~4단계 시스템 30초 가이드</div>
+      <span id="guideArrow" style="color:#10b981;font-size:13px">▾</span>
+    </div>
+    <div id="guideBody" style="padding:0 20px 18px;font-size:13px;color:#94a3b8;line-height:1.75">
+      <div style="background:rgba(16,185,129,.06);border-left:3px solid #10b981;border-radius:8px;padding:12px 14px;margin-bottom:14px;color:#e2e8f0">
+        <b style="color:#10b981">핵심:</b> 단계는 "좋다/나쁘다"가 아니라 <b>테제가 얼마나 검증됐고 가격에 얼마나 실렸는가</b>를 나타냅니다.
+        <b style="color:#f87171">4단계 = 나쁜 회사가 아니라 가격이 과열</b>, <b>0단계 = 부실이 아니라 아직 관찰 중</b>.
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
+        <div style="padding:10px 12px;background:rgba(255,255,255,.03);border-radius:8px"><b style="color:#64748b">0 · 관찰</b><br><span style="font-size:11px">테제 가설 단계. 아직 신호 없음</span></div>
+        <div style="padding:10px 12px;background:rgba(255,255,255,.03);border-radius:8px"><b style="color:#4a9eff">1 · 바닥·신호</b><br><span style="font-size:11px">저점 다지기, 초기 신호 포착</span></div>
+        <div style="padding:10px 12px;background:rgba(255,255,255,.03);border-radius:8px"><b style="color:#10b981">2 · 점화·확인</b><br><span style="font-size:11px">추정치 상향 시작, 돌파</span></div>
+        <div style="padding:10px 12px;background:rgba(255,255,255,.03);border-radius:8px"><b style="color:#c9a84c">3 · 런업·촉매</b><br><span style="font-size:11px">추세·실적 검증, 본격 상승</span></div>
+        <div style="padding:10px 12px;background:rgba(248,113,113,.06);border-radius:8px"><b style="color:#f87171">4 · 과열·고점</b><br><span style="font-size:11px">주가&gt;목표가, 환희. 추격 주의</span></div>
+      </div>
+      <div style="font-size:11px;color:#475569;margin-top:12px">📊 각 탭의 단계 배지는 입력하신 종목을 이 틀로 자동 분류한 결과입니다. 매수·매도 신호가 아니라 "지금 어느 구간인가"의 지도입니다. · 자세히: 전략단계 탭</div>
+    </div>
+  </div>
+
   <!-- 온보딩: 빈 포트일 때 보유 종목 입력 유도 -->
   <div id="onboardCard" class="glass-strong" style="display:none;border-radius:20px;padding:28px;margin-bottom:20px;border:1px solid rgba(16,185,129,.25)">
     <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:6px">보유 종목(3~8개)을 입력해주세요</div>
@@ -5488,13 +5510,17 @@ function obRender(){
   const el=document.getElementById('ob-rows');if(!el)return;
   el.innerHTML=`<div style="display:flex;gap:8px;margin-bottom:5px;font-size:10px;color:#475569"><span style="flex:0 0 150px">티커</span><span style="flex:0 0 120px">현재 비중%</span></div>`+
   obRows.map((r,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
-    <input value="${r.tk}" placeholder="예: PLTR · 005930 · 삼성전자" maxlength="14" oninput="obRows[${i}].tk=this.value.toUpperCase().replace(/[^0-9A-Z가-힣.\\- ]/g,'');this.value=obRows[${i}].tk" style="flex:0 0 200px;font-family:'DM Mono',monospace;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#e2e8f0;padding:9px 12px;outline:none">
+    <input value="${r.tk}" placeholder="예: PLTR · 005930 · 삼성전자" maxlength="14" oninput="obTkIn(event,this,${i})" oncompositionend="obTkIn(event,this,${i})" style="flex:0 0 200px;font-family:'DM Mono',monospace;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#e2e8f0;padding:9px 12px;outline:none">
     <input value="${r.wt}" type="number" placeholder="비중%" oninput="obRows[${i}].wt=this.value" style="flex:0 0 120px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#e2e8f0;padding:9px 12px;outline:none">
     ${obRows.length>3?`<button onclick="obRows.splice(${i},1);obRender()" class="btn-ghost" style="padding:8px 11px">✕</button>`:''}
   </div>`).join('');
   document.getElementById('ob-add').style.display=obRows.length>=8?'none':'';
 }
 function obAddRow(){if(obRows.length<8){obRows.push({tk:'',wt:''});obRender();}}
+function obTkIn(ev,el,i){
+  obRows[i].tk=el.value;
+  if(!ev||!ev.isComposing){const v=el.value.toUpperCase().replace(/[^0-9A-Z가-힣.\- ]/g,'');if(el.value!==v)el.value=v;obRows[i].tk=v;}
+}
 function obStart(){
   const err=document.getElementById('ob-err');
   const valid=obRows.filter(r=>r.tk.trim());
@@ -5508,6 +5534,8 @@ function obStart(){
   if(typeof normalizeTargets==='function')normalizeTargets();
   renderAll();
 }
+function toggleGuide(){const b=document.getElementById('guideBody'),a=document.getElementById('guideArrow');if(!b)return;const open=b.style.display!=='none';b.style.display=open?'none':'block';a.textContent=open?'▸':'▾';localStorage.setItem('j1_guide',open?'closed':'open');}
+function initGuide(){const b=document.getElementById('guideBody'),a=document.getElementById('guideArrow');if(!b)return;const closed=localStorage.getItem('j1_guide')==='closed';b.style.display=closed?'none':'block';a.textContent=closed?'▸':'▾';}
 function renderOnboard(){
   const card=document.getElementById('onboardCard');if(!card)return;
   const empty=(typeof portfolio==='undefined')||portfolio.length===0;
@@ -5546,7 +5574,7 @@ function switchTab(idx){
   }catch(e){}
 })();
 function init(){
-  normalizeTargets();renderAll();switchTab(0);updateKeyUI();updateFinnhubUI();
+  normalizeTargets();renderAll();switchTab(0);updateKeyUI();updateFinnhubUI();initGuide();
   if(finnhubKey){refreshAllPrices();refreshWatchlistPrices();} /* 키 없으면 CORS 프록시 순차호출로 느려짐 — 버튼 클릭 시에만 시도 */
   setInterval(()=>{document.getElementById('lastUpdated').textContent=new Date().toLocaleTimeString('ko-KR')+' 기준';},60000);
 }

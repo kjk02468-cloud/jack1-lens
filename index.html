@@ -6,7 +6,7 @@
 <title>JACK1 LENS · 종목 입력 → 7대 프레임 분석</title>
 <script>
 /* 자동 버전 갱신 — 패치 배포 시 고객 브라우저가 자동으로 최신본 로드 */
-const APP_VERSION='2026-06-27-14';
+const APP_VERSION='2026-06-27-16';
 (function(){try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(function(d){if(d&&d.v&&d.v!==APP_VERSION&&localStorage.getItem('j1lens_rv')!==d.v){localStorage.setItem('j1lens_rv',d.v);location.replace(location.pathname+'?v='+encodeURIComponent(d.v)+'_'+Date.now());}}).catch(function(){});}catch(e){}})();
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -281,7 +281,7 @@ ${curNote()}
 현레짐정합: (지금 순풍/역풍, 왜)
 테마: (이 종목들을 관통하는 1~2개 테마)
 2차파급: (그 거시가 움직이면 일어나는 2~3차 효과)
-동시노출리스크: (같은 거시에 묶여 한꺼번에 맞는 지점)`,1000);
+동시노출리스크: (같은 거시에 묶여 한꺼번에 맞는 지점)`,1000,'llama-3.1-8b-instant');
     renderText(res,'4','거시/테마 분석',macro);
 
     // STEP 3 — 어닝 캘린더 (요건 5)
@@ -291,7 +291,7 @@ ${curNote()}
 [종목] ${list}${LOCK}
 어닝 캘린더를 구조화. 각 종목 한 줄(파이프 구분):
 티커 | 다음 실적(반드시 오늘 이후 도래할 미래 분기 'YYYY Qn'만. 예: 올해가 2026이면 2026 Q3 이상. 과거 분기·특정 날짜 절대 금지) | 이번에 볼 핵심지표 1~2 | 킬 트리거 1
-끝에 "관련이슈: 이 종목들에 영향줄 공통 거시/이벤트 일정 1~2 한 줄". 날짜는 추정—IR 재확인.`,1000);
+끝에 "관련이슈: 이 종목들에 영향줄 공통 거시/이벤트 일정 1~2 한 줄". 날짜는 추정—IR 재확인.`,1000,'llama-3.1-8b-instant');
     renderTable(res,'5','어닝 캘린더',earn);
 
     // STEP 4 — 비중·리밸런싱·전략단계 (요건 7)
@@ -303,7 +303,7 @@ ${curNote()}
 집중도진단: (단일종목 상한·같은 자금줄 합산·pre-profit 비중 경고)
 리밸런싱: (현재비중 입력됐으면 어디 줄이고 늘릴지 방향, 없으면 목표비중 제안)
 전략단계구성: (코어/위성/선행 버킷으로 어떻게 배치)
-실행주의: (현 레짐에서 조심할 점). 매수/매도 종목 단정 금지.`,1100);
+실행주의: (현 레짐에서 조심할 점). 매수/매도 종목 단정 금지.`,1100,'llama-3.1-8b-instant');
     renderText(res,'7','비중 · 리밸런싱 · 전략단계',weight);
 
     document.getElementById('progress').style.display='none';

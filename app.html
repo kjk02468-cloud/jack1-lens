@@ -6,7 +6,7 @@
 <title>JACK1 • 미국주식 포트폴리오</title>
 <script>
 /* 자동 버전 갱신 — 패치 배포 시 고객 브라우저가 자동으로 최신본 로드 */
-const APP_VERSION='2026-06-24-2';
+const APP_VERSION='2026-06-27-3';
 (function(){try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{if(d&&d.v&&d.v!==APP_VERSION&&!/[?&]v=/.test(location.search)){location.replace(location.pathname+'?v='+encodeURIComponent(d.v));}}).catch(function(){});}catch(e){}})();
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -4461,7 +4461,7 @@ async function analyzeFramework(){
 ★절대 규칙: 매수/매도/보유 권유 금지. "이 틀로 보면 ~"으로만 서술. 마지막에 "결정은 본인" 명시. 모르면 모른다고.
 
 [분석 대상] 티커: ${tk}${thesis?` / 사용자가 사려는 이유: "${thesis}"`:''}
-[사용자 현 보유(맥락)] ${held.join('·')||'없음'} — 8종목=실효 4덩어리(A:AI서버 AI capex 연결주 / B:전력 NBIS·BE / C:정부 MRCY·RKLB·IONQ / D:비상관 AMBA). AI capex 60% 집중이 최대 리스크. 현 레짐: 이란 MOU 진정 but AVGO capex 미스로 AI ROI 잔존위험.
+[사용자 현 보유(맥락)] ${held.join('·')||'없음'} — 8종목=실효 4덩어리(A:AI서버 AI capex 연결주 / B:전력 NBIS·BE / C:정부 MRCY·RKLB·IONQ / D:비상관 AMBA). AI capex 60% 집중이 최대 리스크. 현 레짐(6/26): AI 트레이드 5일 연속 조정 — MU 호실적에도 tech 매도(AI 비용 우려+OpenAI IPO 2027 연기설+Fed 인상 베팅). 유가↓=인플레 완화. 고멀티플·pre-profit·AI capex 직격, 방어·소형·비-AI 상대우위. 7/28~30 하이퍼스케일러 capex가 확정타.
 ${EXPERT_LENS}
 
 아래 9개 항목을 각각 "라벨: 내용" 한 줄로(짧고 핵심, 일반론 금지, 이 종목 고유 사업모델 기준):
@@ -5515,17 +5515,14 @@ function obRender(){
   const el=document.getElementById('ob-rows');if(!el)return;
   el.innerHTML=`<div style="display:flex;gap:8px;margin-bottom:5px;font-size:10px;color:#475569"><span style="flex:0 0 150px">티커</span><span style="flex:0 0 120px">현재 비중%</span></div>`+
   obRows.map((r,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
-    <input value="${r.tk}" placeholder="예: PLTR · 005930 · 삼성전자" maxlength="14" oninput="obTkIn(event,this,${i})" oncompositionend="obTkIn(event,this,${i})" style="flex:0 0 200px;font-family:'DM Mono',monospace;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#e2e8f0;padding:9px 12px;outline:none">
+    <input value="${r.tk}" placeholder="예: PLTR · 005930 · 삼성전자" maxlength="14" oninput="obRows[${i}].tk=this.value" onblur="obTkNorm(this,${i})" oncompositionend="obTkNorm(this,${i})" style="flex:0 0 200px;font-family:'DM Mono',monospace;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#e2e8f0;padding:9px 12px;outline:none">
     <input value="${r.wt}" type="number" placeholder="비중%" oninput="obRows[${i}].wt=this.value" style="flex:0 0 120px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#e2e8f0;padding:9px 12px;outline:none">
     ${obRows.length>3?`<button onclick="obRows.splice(${i},1);obRender()" class="btn-ghost" style="padding:8px 11px">✕</button>`:''}
   </div>`).join('');
   document.getElementById('ob-add').style.display=obRows.length>=8?'none':'';
 }
 function obAddRow(){if(obRows.length<8){obRows.push({tk:'',wt:''});obRender();}}
-function obTkIn(ev,el,i){
-  obRows[i].tk=el.value;
-  if(!ev||!ev.isComposing){const v=el.value.toUpperCase().replace(/[^0-9A-Z가-힣.\- ]/g,'');if(el.value!==v)el.value=v;obRows[i].tk=v;}
-}
+function obTkNorm(el,i){const v=(el.value||'').toUpperCase().replace(/[^0-9A-Z가-힣.\- ]/g,'').trim();el.value=v;obRows[i].tk=v;}
 function obStart(){
   const err=document.getElementById('ob-err');
   const valid=obRows.filter(r=>r.tk.trim());

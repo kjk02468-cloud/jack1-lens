@@ -6,7 +6,7 @@
 <title>JACK1 LENS · 종목 입력 → 7대 프레임 분석</title>
 <script>
 /* 자동 버전 갱신 — 패치 배포 시 고객 브라우저가 자동으로 최신본 로드 */
-const APP_VERSION='2026-06-24-2';
+const APP_VERSION='2026-06-27-3';
 (function(){try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{if(d&&d.v&&d.v!==APP_VERSION&&!/[?&]v=/.test(location.search)){location.replace(location.pathname+'?v='+encodeURIComponent(d.v));}}).catch(function(){});}catch(e){}})();
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -72,6 +72,25 @@ th{color:#475569;font-size:10px;font-weight:600;text-transform:uppercase}
 
 <div class="card" style="padding:34px 20px 60px;position:relative;z-index:1">
 
+  <!-- 처음 사용자 가이드 (접이식) -->
+  <div class="glass sec" style="border:1px solid rgba(16,185,129,.2);padding:0;overflow:hidden">
+    <div onclick="toggleHelp()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:15px 20px">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px">📖 처음이세요? — 1분 사용법</div>
+      <span id="helpArrow" style="color:#10b981;font-size:13px">▾</span>
+    </div>
+    <div id="helpBody" style="padding:0 20px 18px;font-size:13px;color:#94a3b8;line-height:1.7">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;gap:10px"><span style="flex:0 0 22px;height:22px;border-radius:6px;background:rgba(16,185,129,.15);color:#10b981;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center">1</span><div><b style="color:#e2e8f0">종목 입력</b> — 보유(또는 관심) 종목을 1~10개. 미국·한국(삼성전자·005930) 다 됩니다. <b>비중%</b>나 <b>금액</b> 중 편한 걸로, <b>원화/달러</b> 선택. (비중 몰라도 티커만 넣어도 OK)</div></div>
+        <div style="display:flex;gap:10px"><span style="flex:0 0 22px;height:22px;border-radius:6px;background:rgba(16,185,129,.15);color:#10b981;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center">2</span><div><b style="color:#e2e8f0">"7대 프레임 분석"</b> 클릭 → 7가지를 표·카드로 정리: ①<b>단계</b>(0~4, 지금 어느 구간) ②<b>타임버킷</b>(언제 빛날 종목) ③<b>자금줄</b>(같은 돈줄=같이 움직임) ④<b>거시/테마</b> ⑤<b>어닝</b>(실적일·볼 것) ⑥<b>밸류체인</b>(병목 위치) ⑦<b>비중·리밸런싱</b></div></div>
+        <div style="display:flex;gap:10px"><span style="flex:0 0 22px;height:22px;border-radius:6px;background:rgba(201,168,76,.15);color:#c9a84c;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center">3</span><div><b style="color:#e2e8f0">"대시보드 생성"</b> → 내 종목 전용 대시보드(11개 메뉴)로 더 깊게 탐색</div></div>
+      </div>
+      <div style="background:rgba(16,185,129,.06);border-left:3px solid #10b981;border-radius:8px;padding:11px 13px;margin-top:14px;color:#e2e8f0;font-size:12px">
+        <b style="color:#10b981">꼭 알아두기:</b> 이건 <b>추천이 아니라 "지금 어디쯤인지" 보여주는 지도</b>입니다. <b style="color:#f87171">단계 4=나쁜 회사가 아니라 가격 과열</b>, 0=부실이 아니라 관찰 중. <b>자금줄</b>=같은 거시에 묶여 함께 움직이는 그룹. 매수·매도·모든 판단과 책임은 본인.
+      </div>
+      <div style="font-size:11px;color:#475569;margin-top:10px">🔒 입력 데이터는 본인 브라우저에만 저장 · 무료 베타 · 분석·교육용 도구</div>
+    </div>
+  </div>
+
   <!-- 입력 -->
   <div class="glass-strong sec" style="border:1px solid rgba(16,185,129,.22)">
     <h3>종목 입력 <span style="font-size:11px;color:#64748b;font-weight:400">1~10개</span></h3>
@@ -136,7 +155,7 @@ const FRAME=`[분석 틀 — 반드시 이 정의로만 분류]
 · 자금줄(같은 줄=같은 운명): AI capex / 금리·듀레이션(고멀티플·pre-profit) / 정부예산·국방 / 에너지·전력 / 소비 / 결제 / 헬스 / 양자 등. capex '수취자'(현금 지금)인지 '지출자'(적자·희석)인지도.
 · 밸류체인 위치: 상류 병목(공급제약·마진 고임) / 중류 / 하류 범용(가격경쟁). 병목일수록 가격결정력↑.
 · 비중 규율: 단계 높을수록(검증) 비중 가능하나 4단계 과열은 추격 금지 / 단일종목 상한 ~18% / 같은 자금줄 합산 집중 경계 / pre-profit·고멀티플 과다 시 금리 리스크 / 수취자 우선.
-· 현 레짐(2026-06): 매파 FOMC(점도표 인상)↔이란 진정·유가 하락 충돌. AI capex ROI는 잔존위험(AVGO 미스). 금리·인플레는 개선 방향.
+· 현 레짐(2026-06-26): AI 트레이드 5일 연속 조정. MU 호실적(HBM 2026 sold-out·기록마진)에도 tech 매도 = "좋은 실적도 안 먹히는" 센티먼트. 동인: AI 비용·거품 우려 + OpenAI IPO 2027 연기설(SpaceX 약세·칩 rout) + Fed 인상 베팅↑(BofA 3회). 유가↓(Brent ~$73, 이란 진정)=인플레는 완화. → 고멀티플·pre-profit·AI capex 직격, 방어주·소형(러셀+)·비-AI 상대우위. 7/28~30 하이퍼스케일러 capex가 AI ROI 마스터스위치.
 · 한국 종목 지원: 6자리 코드(예 005930)나 한글명(예 삼성전자·에코프로비엠)도 분석. 국내 종목이면 미국 대신 KOSPI/KOSDAQ·원화·국내 거시(한은 기준금리·원달러 환율·반도체 수출·중국 수요)로 자금줄/거시를 해석. 종목명만으로 불명확하면 추정임을 밝혀라.
 ★규칙: 매수/매도/보유 권유 금지. "이 틀로 보면~"으로만. 일반론 금지, 종목 고유 사업모델 기준. 모르면 모른다고. 마크다운 별표 금지.`;
 
@@ -174,7 +193,7 @@ function renderRows(){
   const el=document.getElementById('rows');
   el.innerHTML=`<div style="display:flex;gap:8px;margin-bottom:5px;font-size:10px;color:#475569"><span style="flex:0 0 200px">티커</span><span style="flex:0 0 130px">${valLabel()} (선택)</span></div>`+
   rows.map((r,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
-    <input value="${r.tk}" placeholder="예: PLTR · 005930 · 삼성전자" maxlength="14" oninput="tkIn(event,this,${i})" oncompositionend="tkIn(event,this,${i})" class="mono" style="flex:0 0 200px">
+    <input value="${r.tk}" placeholder="예: PLTR · 005930 · 삼성전자" maxlength="14" oninput="tkRaw(this,${i})" onblur="tkNorm(this,${i})" oncompositionend="tkNorm(this,${i})" class="mono" style="flex:0 0 200px">
     <input value="${r.wt}" type="number" placeholder="${inputMode==='weight'?'비중%':(curSym()+' 금액')}" oninput="rows[${i}].wt=this.value;saveRows()" style="flex:0 0 130px">
     ${rows.length>1?`<button onclick="rows.splice(${i},1);saveRows();renderRows()" class="btn-ghost" style="padding:8px 11px">✕</button>`:''}
   </div>`).join('');
@@ -182,16 +201,9 @@ function renderRows(){
 }
 function addRow(){if(rows.length<10){rows.push({tk:'',wt:''});renderRows();}}
 function saveRows(){localStorage.setItem('j1lens_rows',JSON.stringify(rows));}
-/* 한글 IME-safe 티커 입력: 조합 중(isComposing)엔 값 건드리지 않음 → 한글 안 깨짐 */
-function tkIn(ev,el,i){
-  rows[i].tk=el.value;
-  if(!ev||!ev.isComposing){
-    const v=el.value.toUpperCase().replace(/[^0-9A-Z가-힣.\- ]/g,'');
-    if(el.value!==v)el.value=v;
-    rows[i].tk=v;
-  }
-  saveRows();
-}
+/* 한글 IME 완전 안전: 타이핑 중엔 값을 절대 안 건드리고(raw 저장), 칸 벗어날 때만 정규화. 모든 기기/브라우저 동일 동작. */
+function tkRaw(el,i){rows[i].tk=el.value;saveRows();}
+function tkNorm(el,i){const v=(el.value||'').toUpperCase().replace(/[^0-9A-Z가-힣.\- ]/g,'').trim();el.value=v;rows[i].tk=v;saveRows();}
 /* 입력값 → 정규화 비중%(분석·대시보드 공용). 금액모드면 합계 대비 환산. */
 function weightedValid(){
   const v=rows.filter(r=>r.tk.trim());
@@ -365,7 +377,9 @@ async function submitGate(){
   }catch(e){err.textContent='연결 오류 — 잠시 후 다시.';}finally{btn.disabled=false;btn.textContent='입장';}
 }
 
-updKey();renderToggles();renderRows();
+function toggleHelp(){const b=document.getElementById('helpBody'),a=document.getElementById('helpArrow');if(!b)return;const open=b.style.display!=='none';b.style.display=open?'none':'block';a.textContent=open?'▸':'▾';localStorage.setItem('j1lens_help',open?'closed':'open');}
+function initHelp(){const b=document.getElementById('helpBody'),a=document.getElementById('helpArrow');if(!b)return;const closed=localStorage.getItem('j1lens_help')==='closed';b.style.display=closed?'none':'block';a.textContent=closed?'▸':'▾';}
+updKey();renderToggles();renderRows();initHelp();
 if(PROXY_URL&&!accessCode&&!apiKey)showGate(false);
 </script>
 </body>

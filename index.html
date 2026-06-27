@@ -6,7 +6,7 @@
 <title>JACK1 LENS · 종목 입력 → 7대 프레임 분석</title>
 <script>
 /* 자동 버전 갱신 — 패치 배포 시 고객 브라우저가 자동으로 최신본 로드 */
-const APP_VERSION='2026-06-27-12';
+const APP_VERSION='2026-06-27-13';
 (function(){try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(function(d){if(d&&d.v&&d.v!==APP_VERSION&&localStorage.getItem('j1lens_rv')!==d.v){localStorage.setItem('j1lens_rv',d.v);location.replace(location.pathname+'?v='+encodeURIComponent(d.v)+'_'+Date.now());}}).catch(function(){});}catch(e){}})();
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -284,10 +284,10 @@ ${curNote()}
     // STEP 3 — 어닝 캘린더 (요건 5)
     setProgress(2);
     const earn=await callLLM(`${FRAME}
-오늘 ${new Date().toISOString().slice(0,10)}. ${curNote()}
-[종목] ${list}${list}
+오늘 ${new Date().toISOString().slice(0,10)} (${new Date().getFullYear()} Q${Math.floor(new Date().getMonth()/3)+1}). ${curNote()}
+[종목] ${list}
 어닝 캘린더를 구조화. 각 종목 한 줄(파이프 구분):
-티커 | 다음 실적(오늘 이후 미래 분기만 'YYYY Qn', 과거·특정날짜 금지) | 이번에 볼 핵심지표 1~2 | 킬 트리거 1
+티커 | 다음 실적(반드시 오늘 이후 도래할 미래 분기 'YYYY Qn'만. 예: 올해가 2026이면 2026 Q3 이상. 과거 분기·특정 날짜 절대 금지) | 이번에 볼 핵심지표 1~2 | 킬 트리거 1
 끝에 "관련이슈: 이 종목들에 영향줄 공통 거시/이벤트 일정 1~2 한 줄". 날짜는 추정—IR 재확인.`,1000);
     renderTable(res,'5','어닝 캘린더',earn);
 
@@ -316,6 +316,16 @@ function renderText(parent,n,title,txt){
   d.innerHTML=secHead(n,title)+'<div style="font-size:13px;line-height:1.8;color:#94a3b8">'+fmt(txt)+'</div>';
   parent.appendChild(d);
 }
+/* 어닝 분기 가드 — 'YYYY Qn'이 현재 분기보다 과거면 현재 도래 분기로 보정(LLM 과거분기 환각 방어) */
+function guardQ(s){
+  if(!s)return s;
+  const m=s.match(/(\d{4})\s*Q\s*([1-4])/i);
+  if(!m)return s;
+  const y=+m[1],q=+m[2];
+  const now=new Date();const cy=now.getFullYear();const cq=Math.floor(now.getMonth()/3)+1;
+  if(y>cy||(y===cy&&q>=cq))return s.replace(m[0],y+' Q'+q);
+  return s.replace(m[0],cy+' Q'+cq);
+}
 function renderTable(parent,n,title,txt){
   const lines=txt.split('\n').map(l=>l.trim()).filter(Boolean);
   const rowsP=lines.filter(l=>l.includes('|'));
@@ -324,8 +334,9 @@ function renderTable(parent,n,title,txt){
   if(rowsP.length){
     const cols=rowsP[0].split('|').length;
     const heads=n.startsWith('1')?['종목','단계','타임버킷','자금줄','밸류체인']:['종목','다음실적','핵심지표','킬 트리거'];
+    const isEarn=n.startsWith('5');
     html+='<div style="overflow-x:auto"><table><thead><tr>'+heads.slice(0,cols).map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>'+
-      rowsP.map(r=>{const c=r.split('|').map(x=>esc(x.trim()));return '<tr>'+c.map((x,i)=>`<td${i===0?' class="mono" style="color:#c9a84c;font-weight:700"':''}>${x}</td>`).join('')+'</tr>';}).join('')+
+      rowsP.map(r=>{const c=r.split('|').map((x,i)=>esc((isEarn&&i===1?guardQ(x.trim()):x.trim())));return '<tr>'+c.map((x,i)=>`<td${i===0?' class="mono" style="color:#c9a84c;font-weight:700"':''}>${x}</td>`).join('')+'</tr>';}).join('')+
       '</tbody></table></div>';
   }
   if(notes.length)html+='<div style="font-size:12px;color:#94a3b8;margin-top:10px;line-height:1.7">'+fmt(notes.join('\n'))+'</div>';

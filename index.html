@@ -6,7 +6,7 @@
 <title>JACK1 LENS · 종목 입력 → 7대 프레임 분석</title>
 <script>
 /* 자동 버전 갱신 — 패치 배포 시 고객 브라우저가 자동으로 최신본 로드 */
-const APP_VERSION='2026-06-27-8';
+const APP_VERSION='2026-06-27-12';
 (function(){try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(function(d){if(d&&d.v&&d.v!==APP_VERSION&&localStorage.getItem('j1lens_rv')!==d.v){localStorage.setItem('j1lens_rv',d.v);location.replace(location.pathname+'?v='+encodeURIComponent(d.v)+'_'+Date.now());}}).catch(function(){});}catch(e){}})();
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -264,7 +264,7 @@ async function runAll(){
 ${curNote()}
 [종목] ${list}${list}
 각 종목을 한 줄씩, 정확히 이 형식(파이프 구분):
-종목(입력 문자열 그대로·코드변환 금지) | 단계(숫자+한단어) | 타임버킷(2027/2028/2029)+한줄근거 | 자금줄(+수취자/지출자) | 밸류체인위치(상류병목/중류/하류)
+종목(입력 문자열 그대로·코드변환 금지) | 단계(숫자+한단어·근거: 주가vs목표가/추정치리비전/매출·수주추세/차트 중 객관지표 1개) | 타임버킷('YYYY Qn' 분기까지·예 2027 Q4) | 자금줄(+수취자/지출자) | 밸류체인위치(상류병목/중류/하류)
 헤더 줄 없이 데이터만. 마지막 줄에 "요약: 이 조합의 단계분포·자금줄 집중 한 줄".`,1100);
     renderTable(res,'1~3·6','종목 분류 — 단계 · 타임버킷 · 자금줄 · 밸류체인',cls);
 
@@ -345,15 +345,18 @@ async function buildDashboard(){
 ${curNote()}
 [종목] ${list}${list}
 아래 종목들의 대시보드 데이터를 생성. 반드시 유효한 JSON만 출력(설명·마크다운 금지). 스키마:
-{"holdings":[{"ticker":"","sector":"한단어","weight":숫자,"stage":0~4정수,"money":"자금줄 한단어","chain":"상류병목/중류/하류","bucket":"2027|2028|2029","pp":true_또는_false(적자·pre-profit·현금소각 종목이면 true, 흑자면 false),"note":"단계·버킷 한줄","thesis":"핵심 테제 한줄(뭘로 돈버나+해자)","bear":"약세 시나리오 한줄","watch":"추적 지표 한줄","kill":"킬 트리거 한줄","earnDate":"반드시 오늘 이후 미래 분기로 'YYYY Qn' 형식(예 2026 Q3). 특정 날짜·과거 분기 금지","earnNote":"이번 실적 핵심 한줄","plan":"메모용 한 줄: 1차 매도(수익실현) 시기 또는 추가매입 시기 — 예 '2027 Q2 1차 트림' 또는 '눌릴 때 추가매입 후보'"}]}
-weight는 입력비중 없으면 단계·집중도 규율로 합리 배분(합 100). 모든 필드 채울 것.`,1600,'llama-3.1-8b-instant');
+{"holdings":[{"ticker":"","sector":"한단어","weight":숫자,"stage":0~4정수,"stageWhy":"단계 판정 근거 한 줄 — 반드시 객관 지표(주가 vs 목표가, 추정치 리비전 방향, 매출/수주 추세, 차트 위치, 밸류에이션) 중 하나로 구체적으로","money":"자금줄 한단어","chain":"상류병목/중류/하류","bucket":"연도+분기 'YYYY Qn'(예 2027 Q4) — 테제가 re-rating으로 보상받을 시기","pp":true_또는_false(적자·pre-profit·현금소각 종목이면 true, 흑자면 false),"note":"단계·버킷 한줄(근거 포함)","thesis":"핵심 테제 한줄(뭘로 돈버나+해자)","bear":"약세 시나리오 한줄","watch":"추적 지표 한줄","kill":"킬 트리거 한줄","earnDate":"반드시 오늘 이후 미래 분기로 'YYYY Qn' 형식(예 2026 Q3). 특정 날짜·과거 분기 금지","earnNote":"이번 실적 핵심 한줄","plan":"메모용 한 줄: 1차 매도(수익실현) 시기 또는 추가매입 시기 — 예 '2027 Q2 1차 트림' 또는 '눌릴 때 추가매입 후보'"}]}
+weight는 입력비중 없으면 단계·집중도 규율로 합리 배분(합 100). 입력한 ${valid.length}개 종목 전부(누락 없이) 출력. 모든 필드 채울 것.`,1900);
     let g; const mm=raw.match(/\{[\s\S]*\}/); if(!mm)throw new Error('JSON 파싱 실패'); g=JSON.parse(mm[0]);
-    const H=g.holdings||[]; if(!H.length)throw new Error('데이터 비어있음');
+    let H=g.holdings||[]; if(!H.length)throw new Error('데이터 비어있음');
+    // 누락 종목 자동 보충: AI가 입력 종목을 빠뜨리면 기본값으로 채워 전부 표시
+    const got=new Set(H.map(h=>(h.ticker||'').toUpperCase().trim()));
+    valid.forEach(r=>{const u=r.tk.toUpperCase();if(!got.has(u))H.push({ticker:r.tk,weight:+r.wt||0,stage:0,money:'미분류',chain:'중류',bucket:'2028',note:'AI 미생성 — 재생성 권장',thesis:'',bear:'',watch:'',kill:'',earnDate:'미정',earnNote:'',plan:'1차 계획 미정',pp:false});});
     const portfolio=[],targets={},stagemeta={},deepdive={},earn={},kill={};
-    H.forEach(h=>{const tk=(h.ticker||'').toUpperCase();if(!tk)return;const w=+h.weight||0;
+    H.forEach(h=>{const tk=(h.ticker||'').toString().trim();if(!tk)return;const w=+h.weight||0;
       portfolio.push({ticker:tk,sector:h.sector||'',avg:w||1,qty:1,price:w||1,dailyChg:0,memo:(h.plan||'').trim()||'1차 계획 미정'});
       targets[tk]=w;
-      stagemeta[tk]={stage:+h.stage||0,money:h.money||'',chain:h.chain||'',note:h.note||'',bucket:h.bucket||'2028',pp:h.pp===true};
+      stagemeta[tk]={stage:+h.stage||0,stageWhy:h.stageWhy||'',money:h.money||'',chain:h.chain||'',note:h.note||'',bucket:h.bucket||'2028 Q2',pp:h.pp===true};
       deepdive[tk]={thesis:h.thesis||'',bear:h.bear||'',watch:h.watch||'',ifkill:h.kill||'',hist:''};
       earn[tk]={date:h.earnDate||'미정',note:h.earnNote||''};
       kill[tk]=h.kill||'';

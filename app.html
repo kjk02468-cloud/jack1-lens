@@ -6,7 +6,7 @@
 <title>JACK1 • 미국주식 포트폴리오</title>
 <script>
 /* 자동 버전 갱신 — 패치 배포 시 고객 브라우저가 자동으로 최신본 로드 */
-const APP_VERSION='2026-06-27-8';
+const APP_VERSION='2026-06-27-12';
 (function(){try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{if(d&&d.v&&d.v!==APP_VERSION&&!/[?&]v=/.test(location.search)){location.replace(location.pathname+'?v='+encodeURIComponent(d.v));}}).catch(function(){});}catch(e){}})();
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -977,7 +977,7 @@ window.addEventListener('load',function(){ if(typeof PROXY_URL!=='undefined'&&PR
       <!-- 실적 프리뷰 패널 -->
         <div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);border-radius:12px;padding:12px 14px;margin-bottom:12px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div style="font-size:12px;font-weight:700;color:#c9a84c;letter-spacing:.08em">📅 Q2 실적 시즌 프리뷰</div>
+            <div style="font-size:12px;font-weight:700;color:#c9a84c;letter-spacing:.08em">📅 <span class="earn-season-label">Q2</span> 실적 시즌 프리뷰</div>
             <button onclick="runEarningsPreviewAll()" class="btn-gold" style="font-size:11px;padding:5px 14px;border-radius:8px">전체 분석</button>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:6px" id="earnings-preview-btns">
@@ -1130,54 +1130,18 @@ window.addEventListener('load',function(){ if(typeof PROXY_URL!=='undefined'&&PR
     <button onclick="selectTheme('finance')" id="vc-btn-finance" class="vc-theme-btn" style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#64748b">🏦 금융 · 핀테크</button>
   </div>
 
-  <!-- 병목 이동의 역사 — 돈은 병목을 따라 흐른다 -->
-  <div class="glass" style="border-radius:18px;padding:20px 22px;margin-bottom:22px;border:1px solid rgba(201,168,76,.13)">
+  <!-- 병목 이동의 역사 — 돈은 병목을 따라 흐른다 (AI·반도체 전용 참고) -->
+  <div id="vc-history" class="glass" style="border-radius:18px;padding:20px 22px;margin-bottom:22px;border:1px solid rgba(201,168,76,.13)">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
       <i class="fa-solid fa-timeline" style="color:#c9a84c;font-size:13px"></i>
       <span style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700">병목 이동의 역사 — 돈은 병목을 따라 흐른다</span>
-      <span style="font-size:10px;color:#475569">린치 병목 프레임의 시계열 적용 · AI 체인 기준</span>
+      <span id="vc-tl-subtitle" style="font-size:10px;color:#475569">린치 병목 프레임의 시계열 적용</span>
     </div>
-    <div style="font-size:11px;color:#64748b;line-height:1.5;margin-bottom:16px">각 병목은 12~18개월 가격결정력 프리미엄을 누리고, 캐파 증설로 해소되면 다음 병목으로 자금이 이동했다. <b style="color:#c9a84c">지금 병목과 다음 병목 사이에 서 있는 게 알파의 자리.</b></div>
+    <div id="vc-tl-intro" style="font-size:11px;color:#64748b;line-height:1.5;margin-bottom:16px"></div>
     <div style="overflow-x:auto;padding-bottom:6px">
-      <div style="display:flex;align-items:stretch;gap:0;min-width:max-content">
-        <!-- 과거 병목들 -->
-        <div style="min-width:150px;padding:12px 14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;opacity:.6">
-          <div style="font-size:9px;color:#475569;font-family:'DM Mono',monospace;margin-bottom:4px">2023</div>
-          <div style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:4px">GPU 그 자체</div>
-          <div style="font-size:10px;color:#475569;line-height:1.5">H100 품귀 — NVDA 마진 75%. 해소: 생산 램프업</div>
-          <div style="font-size:9px;color:#334155;margin-top:5px">수혜: NVDA +239%</div>
-        </div>
-        <div style="display:flex;align-items:center;padding:0 6px;color:#334155">→</div>
-        <div style="min-width:150px;padding:12px 14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;opacity:.7">
-          <div style="font-size:9px;color:#475569;font-family:'DM Mono',monospace;margin-bottom:4px">2024</div>
-          <div style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:4px">HBM·CoWoS 패키징</div>
-          <div style="font-size:10px;color:#475569;line-height:1.5">메모리 대역폭 + 첨단 패키징 캐파 부족. 해소: TSMC 증설</div>
-          <div style="font-size:9px;color:#334155;margin-top:5px">수혜: MU·SK하이닉스·TSM</div>
-        </div>
-        <div style="display:flex;align-items:center;padding:0 6px;color:#334155">→</div>
-        <div style="min-width:160px;padding:12px 14px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.3);border-radius:12px">
-          <div style="font-size:9px;color:#10b981;font-family:'DM Mono',monospace;margin-bottom:4px">2025~26 ● 현재</div>
-          <div style="font-size:12px;font-weight:700;color:#10b981;margin-bottom:4px">전력 + 클러스터 연결</div>
-          <div style="font-size:10px;color:#94a3b8;line-height:1.5">그리드 대기 3년+ / GPU간 대역폭 병목. 칩은 있는데 꽂을 곳과 이을 선이 없다</div>
-          <div id="vc-tl-now" style="font-size:9px;color:#10b981;margin-top:5px;font-weight:700"></div>
-        </div>
-        <div style="display:flex;align-items:center;padding:0 6px;color:#fbbf24">→</div>
-        <div style="min-width:160px;padding:12px 14px;background:rgba(251,191,36,.05);border:1px dashed rgba(251,191,36,.35);border-radius:12px">
-          <div style="font-size:9px;color:#fbbf24;font-family:'DM Mono',monospace;margin-bottom:4px">2027E 다음 병목 후보</div>
-          <div style="font-size:12px;font-weight:700;color:#fbbf24;margin-bottom:4px">추론 단가 + 엣지 분산</div>
-          <div style="font-size:10px;color:#94a3b8;line-height:1.5">추론 수요 폭증 → 중앙 DC 단가 한계 → 엣지로 연산 분산 압력</div>
-          <div id="vc-tl-next" style="font-size:9px;color:#fbbf24;margin-top:5px;font-weight:700"></div>
-        </div>
-        <div style="display:flex;align-items:center;padding:0 6px;color:#f87171">→</div>
-        <div style="min-width:160px;padding:12px 14px;background:rgba(248,113,113,.04);border:1px dashed rgba(248,113,113,.3);border-radius:12px">
-          <div style="font-size:9px;color:#f87171;font-family:'DM Mono',monospace;margin-bottom:4px">2028~29E 가설</div>
-          <div style="font-size:12px;font-weight:700;color:#f87171;margin-bottom:4px">고전 연산의 물리 한계</div>
-          <div style="font-size:10px;color:#94a3b8;line-height:1.5">특정 문제군(최적화·재료설계)에서 고전 컴퓨팅 비용 곡선 한계 → 양자 가속기 수요</div>
-          <div style="font-size:9px;color:#f87171;margin-top:5px;font-weight:700">⭐ 선행 병목 후보 — 내러티브 초입(고위험·저비중 구간)</div>
-        </div>
-      </div>
+      <div id="vc-tl-flow" style="display:flex;align-items:stretch;gap:0;min-width:max-content"></div>
     </div>
-    <div style="font-size:10px;color:#334155;margin-top:10px;line-height:1.6">⚠ 점선 = 가설(검증 전). 막스 2차 레벨: 현재 병목(전력·연결)은 시장이 이미 안다 — 초과수익은 <b style="color:#fbbf24">다음 병목의 증거가 컨센서스가 되기 전</b>에 나온다. 관측 신호: 추론 API 단가 하락 둔화(엣지 압력↑), 하이퍼스케일러 "전력 확보 완료" 발언(현 병목 해소 신호 = 로테이션 임박).</div>
+    <div id="vc-tl-foot" style="font-size:10px;color:#334155;margin-top:10px;line-height:1.6"></div>
   </div>
 
   <!-- (구독자: 운영자 개인 블록 제거) -->
@@ -1396,7 +1360,7 @@ let macroEvents=JSON.parse(localStorage.getItem('j1_macro')||'[]');
 let rebTargets=JSON.parse(localStorage.getItem('j1_rebTargets')||'{}');
 let portfolioChart=null;
 let apiKey=localStorage.getItem('j1_apikey')||'';
-let finnhubKey=localStorage.getItem('j1_finnhub')||'';
+let finnhubKey=localStorage.getItem('j1_finnhub')||'d89ooc1r01qhi7rtdp50d89ooc1r01qhi7rtdp5g';
 let watchlist=JSON.parse(localStorage.getItem('j1_watchlist')||'[]');
 
 /* ─── PORTFOLIO 동기화 (2026-06-10 v3 — 롤링 타임버킷 8종목) ─── */
@@ -4083,7 +4047,37 @@ async function fetchFedNews(){
   }catch(e){el.innerHTML=`<div style="color:#f87171;font-size:12px">⚠ ${e.message}</div>`;}
 }
 
+/* 현재 실적 보고 시즌 라벨 — 보고월 기준 직전 분기 실적이 발표됨 (예: 7~8월=Q2 보고) */
+function earnSeasonLabel(d){
+  d=d||new Date();
+  const m=d.getMonth();/* 0=Jan */ const y=d.getFullYear();
+  /* 보고 시즌: 1~2월→전년 Q4, 4~5월→Q1, 7~8월→Q2, 10~11월→Q3. 그 외 달은 가장 임박한 시즌 */
+  let rq,ry;
+  if(m<=1){rq=4;ry=y-1;}            /* Jan-Feb */
+  else if(m===2){rq=4;ry=y-1;}      /* Mar: Q4 잔여 */
+  else if(m<=4){rq=1;ry=y;}         /* Apr-May */
+  else if(m===5){rq=2;ry=y;}        /* Jun: Q2 시즌 임박 */
+  else if(m<=7){rq=2;ry=y;}         /* Jul-Aug */
+  else if(m===8){rq=3;ry=y;}        /* Sep: Q3 임박 */
+  else if(m<=10){rq=3;ry=y;}        /* Oct-Nov */
+  else {rq=4;ry=y;}                  /* Dec: Q4 임박(다음 1~2월 보고) */
+  return ry+' Q'+rq;
+}
+/* 어닝 날짜 가드 — 'YYYY Qn'이 현재 분기보다 과거면 다음 도래 분기로 보정 (LLM 과거분기 환각 방어) */
+function guardEarnDate(s){
+  if(!s||typeof s!=='string')return s;
+  const m=s.match(/(\d{4})\s*Q\s*([1-4])/i);
+  if(!m)return s; /* 'YYYY Qn' 형식 아니면(미정/특정날짜) 그대로 */
+  const y=+m[1],q=+m[2];
+  const now=new Date();const cy=now.getFullYear();const cq=Math.floor(now.getMonth()/3)+1;
+  if(y>cy||(y===cy&&q>=cq))return y+' Q'+q; /* 현재 분기 이상이면 OK */
+  /* 과거면 다음 도래 분기로 */
+  let ny=cy,nq=cq;
+  return ny+' Q'+nq;
+}
 function initEarningsTab(){
+  const sl=earnSeasonLabel();
+  document.querySelectorAll('.earn-season-label').forEach(e=>e.textContent=sl);
   renderEarnDdayBar();
   renderMonthCalendar();
   renderEarnClusterTimeline();
@@ -4515,7 +4509,7 @@ async function runEarningsPreview(ticker){
   const ret=h.currentPrice&&h.avgPrice?((h.currentPrice-h.avgPrice)/h.avgPrice*100).toFixed(1)+'%':'N/A';
   const todayStr=new Date().toISOString().slice(0,10);
   try{
-    const txt=await callLLM(`당신은 연봉 100억 월가 PM입니다. ${todayStr} 기준 ${ticker}의 Q2 실적 프리뷰를 한국어로 작성하세요.
+    const txt=await callLLM(`당신은 연봉 100억 월가 PM입니다. ${todayStr} 기준 ${ticker}의 ${earnSeasonLabel()} 실적 프리뷰를 한국어로 작성하세요. (과거 분기가 아니라 ${todayStr} 이후 도래할 실적 발표 기준)
 ${EXPERT_LENS}
 
 [컨텍스트]
@@ -4549,7 +4543,7 @@ async function runEarningsPreviewAll(){
     return `${tk}: ${e.date} | ${e.note} | 킬정의: ${KILL_DEFS_R[tk]||'?'}`;
   }).join('\n');
   try{
-    const txt=await callLLM(`당신은 연봉 100억 월가 PM입니다. ${todayStr} 기준 아래 포트폴리오의 Q2 실적 시즌 전략을 한국어로 분석하세요.
+    const txt=await callLLM(`당신은 연봉 100억 월가 PM입니다. ${todayStr} 기준 아래 포트폴리오의 ${earnSeasonLabel()} 실적 시즌 전략을 한국어로 분석하세요. (과거 분기가 아니라 ${todayStr} 이후 도래할 실적 시즌 기준)
 ${EXPERT_LENS}
 
 [보유현황]
@@ -4567,7 +4561,7 @@ ${earnTable}
 6. Howard Marks 2nd level — 컨센서스가 놓치고 있는 것, 시장이 이미 가격에 반영한 것
 
 마크다운·별표 없이.`,1000);
-    el.innerHTML=`<div style="font-size:10px;color:#c9a84c;font-weight:700;letter-spacing:.1em;margin-bottom:8px">📊 Q2 실적 시즌 포트폴리오 전략 — ${todayStr}</div>`+fmtPMBullets(txt);
+    el.innerHTML=`<div style="font-size:10px;color:#c9a84c;font-weight:700;letter-spacing:.1em;margin-bottom:8px">📊 ${earnSeasonLabel()} 실적 시즌 포트폴리오 전략 — ${todayStr}</div>`+fmtPMBullets(txt);
   }catch(e){el.innerHTML=`<span style="color:#f87171">⚠ ${e.message}</span>`;}
 }
 
@@ -5288,6 +5282,8 @@ function selectTheme(theme){
   const btn=document.getElementById('vc-btn-'+theme);
   if(btn){btn.style.borderColor='#10b981';btn.style.background='rgba(16,185,129,.15)';btn.style.color='#10b981';}
   renderVCFlow();
+  if(typeof renderVCTimeline==='function')renderVCTimeline();
+  const hist=document.getElementById('vc-history');if(hist)hist.style.display=VC_HISTORY[theme]?'block':'none'; /* 병목 역사: 테마별 로테이션 */
   document.getElementById('vc-node-detail').style.display='none';
   document.getElementById('vc-ai-panel').style.display='none';
 }
@@ -5489,15 +5485,101 @@ ${EXPERT_LENS}
   }catch(e){el.innerHTML=`<div style="color:#f87171">⚠ ${e.message}</div>`;}
 }
 
+const VC_HISTORY={
+  ai:{
+    sub:'AI · 반도체 체인 기준',
+    intro:'각 병목은 12~18개월 가격결정력 프리미엄을 누리고, 캐파 증설로 해소되면 다음 병목으로 자금이 이동했다. <b style="color:#c9a84c">지금 병목과 다음 병목 사이에 서 있는 게 알파의 자리.</b>',
+    stages:[
+      {era:'2023',label:'GPU 그 자체',desc:'H100 품귀 — NVDA 마진 75%. 해소: 생산 램프업',note:'수혜: NVDA +239%',state:'past'},
+      {era:'2024',label:'HBM·CoWoS 패키징',desc:'메모리 대역폭 + 첨단 패키징 캐파 부족. 해소: TSMC 증설',note:'수혜: MU·SK하이닉스·TSM',state:'past'},
+      {era:'2025~26',label:'전력 + 클러스터 연결',desc:'그리드 대기 3년+ / GPU간 대역폭 병목. 칩은 있는데 꽂을 곳과 이을 선이 없다',state:'now'},
+      {era:'2027E',label:'추론 단가 + 엣지 분산',desc:'추론 수요 폭증 → 중앙 DC 단가 한계 → 엣지로 연산 분산 압력',state:'next'},
+      {era:'2028~29E',label:'고전 연산의 물리 한계',desc:'특정 문제군(최적화·재료설계)에서 고전 컴퓨팅 비용 곡선 한계 → 양자 가속기 수요',note:'⭐ 선행 병목 후보 — 내러티브 초입(고위험·저비중)',state:'hypo'}
+    ],
+    foot:'⚠ 점선 = 가설(검증 전). 막스 2차 레벨: 현재 병목(전력·연결)은 시장이 이미 안다 — 초과수익은 <b style="color:#fbbf24">다음 병목의 증거가 컨센서스가 되기 전</b>에 나온다. 관측 신호: 추론 API 단가 하락 둔화, 하이퍼스케일러 "전력 확보 완료" 발언(현 병목 해소 = 로테이션 임박).'
+  },
+  energy:{
+    sub:'에너지 전환 체인 기준',
+    intro:'전력화·전동화 사이클도 병목을 따라 자금이 이동했다. 발전→송배전→저장→수요단으로 병목이 하류 이동 중. <b style="color:#c9a84c">전력 부족의 진짜 수혜는 발전기가 아니라 못 보낸 전기를 풀어주는 곳.</b>',
+    stages:[
+      {era:'2022~23',label:'태양광·배터리 셀',desc:'IRA 보조금 + 셀 수요 폭증. 해소: 중국 과잉증설로 셀 가격 폭락',note:'수혜→역풍: 셀 마진 붕괴',state:'past'},
+      {era:'2024',label:'유틸리티·원전 재평가',desc:'AI 데이터센터 전력 수요 → 기저부하 원전·가스 재조명',note:'수혜: 유틸리티·SMR 내러티브',state:'past'},
+      {era:'2025~26',label:'그리드 + 송배전 장비',desc:'발전은 되는데 송전망·변압기 병목. 변압기 리드타임 2~3년. 전기를 보낼 선과 변전이 없다',state:'now'},
+      {era:'2027E',label:'장기 저장(LDES)',desc:'재생E 비중↑ → 간헐성 해소 위해 4시간+ 장주기 저장 수요. 그리드 안정화 병목',state:'next'},
+      {era:'2028~29E',label:'연료전지·수소 코어',desc:'전력 단가·탄소규제 임계 → 분산형 상시발전(연료전지)·청정수소 비용곡선 진입',note:'⭐ 선행 병목 후보 — 정책 의존 고위험',state:'hypo'}
+    ],
+    foot:'⚠ 점선 = 가설(검증 전). 관측 신호: 변압기·스위치기어 백로그 정점 통과(현 병목 해소), 전력 PPA 단가 급등(저장 경제성↑), 그리드 상호연결 대기열 감소.'
+  },
+  health:{
+    sub:'헬스케어 · GLP-1 체인 기준',
+    intro:'비만·대사 혁명의 자금은 약물→공급(CDMO)→전달·인접질환으로 이동 중. <b style="color:#c9a84c">약을 만든 곳보다, 못 만드는 물량을 풀어주는 곳에 먼저 프리미엄이 붙었다.</b>',
+    stages:[
+      {era:'2022~23',label:'GLP-1 원개발사',desc:'세마글루타이드·티르제파타이드 효능 입증 → 수요 폭발. 해소 아직(수요 초과)',note:'수혜: 오리지널 2社 과점',state:'past'},
+      {era:'2024',label:'생산 캐파(CDMO·펜)',desc:'약은 승인됐는데 못 만든다 — 무균충전·주사펜 병목. 공급이 매출 상한',note:'수혜: CDMO·디바이스',state:'past'},
+      {era:'2025~26',label:'경구화 + 공급 정상화',desc:'주사→경구 전환 경쟁 + 캐파 증설로 물량 병목 완화. 접근성·복약순응이 새 전장',state:'now'},
+      {era:'2027E',label:'적응증 확장',desc:'심혈관·MASH·수면무호흡·신장 등 라벨 확장 → 보험 급여 확대가 시장 크기 재정의',state:'next'},
+      {era:'2028~29E',label:'근육보존·차세대 병용',desc:'체중감소의 근손실 부작용 해소(근육보존 병용) → 삶의 질 차별화가 점유율 가른다',note:'⭐ 선행 병목 후보 — 임상 바이너리',state:'hypo'}
+    ],
+    foot:'⚠ 점선 = 가설(검증 전). 관측 신호: 공급 부족 리스트 해제(캐파 병목 해소), 경구제 3상 데이터, CMS·민간보험 급여 결정, 심혈관 아웃컴 라벨 추가.'
+  },
+  defense:{
+    sub:'방위 · 우주 체인 기준',
+    intro:'지정학 재무장 사이클의 자금은 탄약 보충→무인·자율→우주 인프라로 이동 중. <b style="color:#c9a84c">전쟁의 진짜 병목은 플랫폼이 아니라 소모품과 양산 능력.</b>',
+    stages:[
+      {era:'2022~23',label:'탄약·정밀유도 보충',desc:'우크라 소모전 → 재고 고갈. 포탄·미사일 생산라인 병목. 해소: 다년 증설계약',note:'수혜: 탄약·미사일 OEM',state:'past'},
+      {era:'2024',label:'발사체 저비용화',desc:'재사용 발사 → kg당 단가 급락. 우주 접근 병목 완화 시작',note:'수혜: 발사 서비스',state:'past'},
+      {era:'2025~26',label:'무인·자율 시스템',desc:'드론·무인함정·자율 군집. 인명 대신 양산 가능한 무인 자산 병목. 소프트웨어 정의 전쟁',state:'now'},
+      {era:'2027E',label:'우주 ISR·통신 위성망',desc:'저궤도 정찰·통신 상시화 → 위성 양산·온오빗 서비스 수요. 우주가 상시 전장 인프라화',state:'next'},
+      {era:'2028~29E',label:'지향성에너지·극초음속 방어',desc:'드론·극초음속 위협 대응 → 레이저 등 저단가 요격 + 극초음속 방어망 수요',note:'⭐ 선행 병목 후보 — 예산 의존',state:'hypo'}
+    ],
+    foot:'⚠ 점선 = 가설(검증 전). 관측 신호: 다년 양산계약(소모품 병목 해소 신호 아님 = 지속), 국방예산 NDAA 증액, 무인체계 조달 비중 급등, 위성 발사 케이던스.'
+  },
+  finance:{
+    sub:'금융 · 핀테크 체인 기준',
+    intro:'디지털 자산·결제 인프라의 자금은 거래소→스테이블코인 결제→토큰화·RWA로 이동 중. <b style="color:#c9a84c">버블의 곡괭이는 투기 자산이 아니라 그 위를 흐르는 결제·수탁 레일.</b>',
+    stages:[
+      {era:'2021~22',label:'거래소·트레이딩',desc:'리테일 투기 사이클 → 거래량 수수료 폭증. 해소: 약세장 거래량 붕괴',note:'수혜→역풍: 거래량 의존',state:'past'},
+      {era:'2023~24',label:'커스터디 + ETF 레일',desc:'현물 ETF 승인 → 기관 진입. 수탁·발행 인프라 병목',note:'수혜: 커스터디·자산운용',state:'past'},
+      {era:'2025~26',label:'스테이블코인 결제망',desc:'규제 명확화 → 스테이블코인이 실결제·송금 레일로. 결제·온램프 처리량 병목',state:'now'},
+      {era:'2027E',label:'RWA 토큰화',desc:'국채·MMF·사모자산 온체인 토큰화 → 발행·정산·컴플라이언스 인프라 수요',state:'next'},
+      {era:'2028~29E',label:'온체인 자본시장',desc:'프로그래머블 결제·자동화 정산이 전통 자본시장 백오피스 대체 압력. 청산·신원 레일',note:'⭐ 선행 병목 후보 — 규제 바이너리',state:'hypo'}
+    ],
+    foot:'⚠ 점선 = 가설(검증 전). 관측 신호: 스테이블코인 결제법 시행, 결제 처리량·온램프 거래액 급증, 토큰화 국채 잔액, 대형 금융기관 온체인 정산 파일럿.'
+  }
+};
+
 function renderVCTimeline(){
-  const now=document.getElementById('vc-tl-now'),nxt=document.getElementById('vc-tl-next');
-  if(!now||!nxt)return;
+  const flow=document.getElementById('vc-tl-flow');
+  if(!flow)return;
+  const H=VC_HISTORY[currentVCTheme]||VC_HISTORY.ai;
+  const sub=document.getElementById('vc-tl-subtitle');if(sub)sub.textContent='린치 병목 프레임의 시계열 적용 · '+H.sub;
+  const intro=document.getElementById('vc-tl-intro');if(intro)intro.innerHTML=H.intro;
+  const foot=document.getElementById('vc-tl-foot');if(foot)foot.innerHTML=H.foot;
   const held=portfolio.map(p=>p.ticker);
-  const ai=VC_THEMES.ai?VC_THEMES.ai.nodes:[];
-  const inHeat=heats=>{const set=new Set();ai.filter(n=>heats.includes(n.heat)).forEach(n=>n.stocks.forEach(s=>{if(held.includes(s))set.add(s);}));return [...set];};
-  const cur=inHeat(['hot']), next=inHeat(['next']);
-  now.textContent=cur.length?('★ 현재 병목 보유: '+cur.join('·')):'★ 현재 병목 — 보유 종목 매핑 위 "내 종목 밸류체인 위치" 참고';
-  nxt.textContent=next.length?('★ 다음 병목 선행: '+next.join('·')):'★ 다음 병목 후보 — 선행 배치 검토 구간';
+  const nodes=(VC_THEMES[currentVCTheme]?VC_THEMES[currentVCTheme].nodes:[]);
+  const inHeat=heats=>{const set=new Set();nodes.filter(n=>heats.includes(n.heat)).forEach(n=>n.stocks.forEach(s=>{if(held.includes(s))set.add(s);}));return [...set];};
+  const cur=inHeat(['hot']),next=inHeat(['next']);
+  const ST={
+    past:{op:'.65',bg:'rgba(255,255,255,.02)',bd:'1px solid rgba(255,255,255,.06)',c:'#94a3b8',ec:'#475569',arrow:'#334155'},
+    now:{op:'1',bg:'rgba(16,185,129,.06)',bd:'1px solid rgba(16,185,129,.3)',c:'#10b981',ec:'#10b981',arrow:'#fbbf24'},
+    next:{op:'1',bg:'rgba(251,191,36,.05)',bd:'1px dashed rgba(251,191,36,.35)',c:'#fbbf24',ec:'#fbbf24',arrow:'#f87171'},
+    hypo:{op:'1',bg:'rgba(248,113,113,.04)',bd:'1px dashed rgba(248,113,113,.3)',c:'#f87171',ec:'#f87171',arrow:'#f87171'}
+  };
+  let html='';
+  H.stages.forEach((s,i)=>{
+    const t=ST[s.state]||ST.past;
+    const eraLabel=s.state==='now'?(s.era+' ● 현재'):(s.state==='next'?(s.era+' 다음 병목 후보'):(s.state==='hypo'?(s.era+' 가설'):s.era));
+    let note=s.note?`<div style="font-size:9px;color:${s.state==='past'?'#334155':t.c};margin-top:5px;font-weight:${s.state==='past'?'400':'700'}">${s.note}</div>`:'';
+    if(s.state==='now'){const m=cur.length?('★ 현재 병목 보유: '+cur.join('·')):'★ 현재 병목 — 위 "내 종목 위치" 참고';note=`<div style="font-size:9px;color:#10b981;margin-top:5px;font-weight:700">${m}</div>`;}
+    if(s.state==='next'){const m=next.length?('★ 다음 병목 선행: '+next.join('·')):'★ 다음 병목 후보 — 선행 배치 검토 구간';note=`<div style="font-size:9px;color:#fbbf24;margin-top:5px;font-weight:700">${m}</div>`;}
+    html+=`<div style="min-width:160px;padding:12px 14px;background:${t.bg};border:${t.bd};border-radius:12px;opacity:${t.op}">
+      <div style="font-size:9px;color:${t.ec};font-family:'DM Mono',monospace;margin-bottom:4px">${eraLabel}</div>
+      <div style="font-size:12px;font-weight:700;color:${t.c};margin-bottom:4px">${s.label}</div>
+      <div style="font-size:10px;color:#94a3b8;line-height:1.5">${s.desc}</div>${note}
+    </div>`;
+    if(i<H.stages.length-1)html+=`<div style="display:flex;align-items:center;padding:0 6px;color:${(ST[H.stages[i+1].state]||ST.past).arrow!=null?t.arrow:'#334155'}">→</div>`;
+  });
+  flow.innerHTML=html;
 }
 function initVCTab(){ selectTheme('ai'); renderVCTimeline(); }
 
@@ -5579,7 +5661,7 @@ function _cleanLang(x){
     // 저장된 stagemeta도 정화해서 다시 저장(거시·밸류체인 패널이 읽음)
     try{const sm=_cleanLang(JSON.parse(localStorage.getItem('j1_stagemeta')||'{}'));localStorage.setItem('j1_stagemeta',JSON.stringify(sm));}catch(e){}
     if(g.deepdive&&typeof DEEPDIVE!=='undefined')Object.assign(DEEPDIVE,g.deepdive);
-    if(g.earn&&typeof EARN_MAP_R!=='undefined')Object.assign(EARN_MAP_R,g.earn);
+    if(g.earn&&typeof EARN_MAP_R!=='undefined'){Object.values(g.earn).forEach(e=>{if(e&&e.date)e.date=guardEarnDate(e.date);});Object.assign(EARN_MAP_R,g.earn);}
     if(g.kill&&typeof KILL_DEFS_R!=='undefined')Object.assign(KILL_DEFS_R,g.kill);
     if(g.growth&&typeof GROWTH_STORY!=='undefined')Object.assign(GROWTH_STORY,g.growth);
   }catch(e){}
@@ -6718,6 +6800,130 @@ window.addEventListener('load',function(){setTimeout(function(){
     if(typeof window[fn]==='function'){const _o=window[fn];window[fn]=function(){const e=document.getElementById('tab-content-10');if(e)e.style.display='none';const t=document.getElementById('tab-10');if(t)t.classList.remove('tab-active');return _o.apply(this,arguments);};}
   });
 },500);});
+})();
+
+/* ═══════════ TAB 11: 5문 답변 (고객 상담 브리핑) ═══════════ */
+/* "사도 되냐/얼마나/언제/왜/이벤트 반응" 5대 질문을 추천이 아닌 '판단 재료' 프레임으로 구조화 */
+(function(){
+  const QS=[
+    {n:1,q:'이 종목 사도 돼요?',sub:'단계·테제 검증·체크리스트로 판단 재료 제공',ic:'🧭',key:'Q1'},
+    {n:2,q:'얼마나 사요?',sub:'비중 프레임 — 단계·리스크 허용도 기준 일반 원칙',ic:'⚖️',key:'Q2'},
+    {n:3,q:'언제 사고 팔아요?',sub:'분할 진입 + 매수/매도 트리거(촉매·킬라인·수익실현)',ic:'⏱️',key:'Q3'},
+    {n:4,q:'왜 사도 되는데요?',sub:'핵심 테제·해자·자금줄 + 반대편(약세) 동급',ic:'💡',key:'Q4'},
+    {n:5,q:'주가가 이벤트에 어떻게 움직여요?',sub:'어닝·금리·매크로 시나리오별 1~3차 파급·비대칭',ic:'📈',key:'Q5'}
+  ];
+  function injectTab(){
+    const anchor=document.getElementById('tab-10')||document.getElementById('tab-6');
+    if(!anchor||document.getElementById('tab-11'))return;
+    const b=document.createElement('div');
+    b.id='tab-11';b.className='tab-btn';
+    b.style.cssText="padding:14px 20px;font-size:15px;font-family:'Syne',sans-serif";
+    b.textContent='5문 답변';
+    b.onclick=advShow;
+    anchor.parentNode.appendChild(b);
+    const sec=document.createElement('div');
+    sec.id='tab-content-11';sec.className='tab-content';
+    sec.style.cssText='display:none;max-width:1200px;margin:0 auto;padding:24px 24px 60px;position:relative;z-index:1';
+    document.querySelector('.tab-content:last-of-type').after(sec);
+  }
+  function advHideAll(){document.querySelectorAll('.tab-content').forEach(e=>e.style.display='none');document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('tab-active'));}
+  window.advShow=function(){advHideAll();const s=document.getElementById('tab-content-11');if(s)s.style.display='block';const t=document.getElementById('tab-11');if(t)t.classList.add('tab-active');advRender();};
+  function advRender(){
+    const sec=document.getElementById('tab-content-11');if(!sec)return;
+    const pf=(typeof portfolio!=='undefined')?portfolio:[];
+    const opts=pf.map(h=>`<option value="${h.ticker}">${h.ticker}${h.sector?' · '+h.sector:''}</option>`).join('');
+    sec.innerHTML=`
+      <div class="glass-strong" style="border-radius:24px;padding:32px;margin-bottom:20px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-60px;right:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.08),transparent 70%);pointer-events:none"></div>
+        <div style="font-size:12px;font-weight:800;letter-spacing:.1em;color:#c9a84c;margin-bottom:6px">고객 5대 질문 — 판단 재료 브리핑</div>
+        <h2 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:8px">"이 종목 어때요?" 5문 답변</h2>
+        <p style="color:#94a3b8;font-size:13px;line-height:1.7;max-width:760px">누가 물어보면 그대로 보여주거나 읽어줄 수 있는 구조화 답변입니다. 종목 하나를 골라 분석하면 5개 질문 각각에 <b style="color:#e2e8f0">"정답"이 아니라 "스스로 판단할 재료"</b>를 정리합니다.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px">
+          ${pf.length?`<select id="adv-sel" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:10px;color:#e2e8f0;padding:11px 14px;font-size:14px;outline:none;font-family:inherit;min-width:200px"><option value="">— 보유 종목 선택 —</option>${opts}</select>`:''}
+          <input id="adv-tk" placeholder="${pf.length?'또는 티커 직접 입력':'티커 입력 (예: NVDA)'}" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:10px;color:#e2e8f0;padding:11px 14px;font-size:14px;outline:none;font-family:'DM Mono',monospace;width:180px;text-transform:uppercase">
+          <button onclick="advRun()" class="btn-gold" style="font-size:14px;padding:11px 22px;border-radius:10px;font-weight:700"><i class="fa-solid fa-wand-magic-sparkles"></i> 5문 답변 생성</button>
+        </div>
+      </div>
+
+      <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22);border-radius:14px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:#fbbf24;line-height:1.7">
+        ⚠ <b>이 화면은 투자 추천이 아닙니다.</b> 정해진 분석 틀(단계·자금줄·밸류체인·테제·시나리오)을 적용한 <b>판단 보조 자료</b>이며, 매수·매도·보유 권유가 아닙니다. 모든 투자 결정과 책임은 본인에게 있습니다. (유사투자자문·투자자문 아님)
+      </div>
+
+      <div id="adv-cards" style="display:grid;gap:14px">
+        ${QS.map(s=>`
+          <div class="glass" style="border-radius:16px;padding:20px 22px;border:1px solid rgba(255,255,255,.07)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+              <span style="font-size:18px">${s.ic}</span>
+              <span style="font-size:15px;font-weight:800;color:#e2e8f0">${s.n}. ${s.q}</span>
+            </div>
+            <div style="font-size:11px;color:#475569;margin-bottom:10px;padding-left:28px">${s.sub}</div>
+            <div id="adv-out-${s.key}" style="padding-left:28px;font-size:13px;line-height:1.7;color:#475569">— 종목을 선택하고 생성하면 여기에 채워집니다.</div>
+          </div>`).join('')}
+      </div>
+    `;
+    const sel=document.getElementById('adv-sel');
+    if(sel)sel.onchange=function(){const t=document.getElementById('adv-tk');if(t)t.value=this.value;};
+  }
+
+  window.advRun=async function(){
+    if(typeof aiReady==='function'&&!aiReady()){alert('AI를 사용할 수 없습니다. 운영자에게 문의하세요.');return;}
+    const tk=((document.getElementById('adv-tk')||{}).value||'').trim().toUpperCase();
+    if(!tk){alert('종목을 선택하거나 티커를 입력하세요.');return;}
+    QS.forEach(s=>{const e=document.getElementById('adv-out-'+s.key);if(e)e.innerHTML='<span style="color:#64748b">분석 중...</span>';});
+    const sm=(typeof getStagemeta==='function')?getStagemeta():{};
+    const mm=sm[tk]||{};
+    const dd=(typeof DEEPDIVE!=='undefined'&&DEEPDIVE[tk])||{};
+    const er=(typeof EARN_MAP_R!=='undefined'&&EARN_MAP_R[tk])||{};
+    const killDef=(typeof KILL_DEFS_R!=='undefined'&&KILL_DEFS_R[tk])||dd.ifkill||'';
+    const h=(typeof portfolio!=='undefined')?portfolio.find(p=>p.ticker===tk):null;
+    const wt=h&&typeof getWeight==='function'?getWeight(h).toFixed(1)+'%':(h&&h.weight_pct?h.weight_pct+'%':'미보유');
+    const ret=h&&h.price&&h.avg?(((h.price-h.avg)/h.avg)*100).toFixed(1)+'%':'N/A';
+    const todayStr=new Date().toISOString().slice(0,10);
+    const ctx=`[종목] ${tk}${h&&h.sector?' ('+h.sector+')':''}
+[보유 컨텍스트] 단계 ${mm.stage!=null?mm.stage+'단계':'미분류'}${mm.stageWhy?'('+mm.stageWhy+')':''} | 자금줄 ${mm.money||'미상'} | 밸류체인 ${mm.chain||'미상'} | 타임버킷 ${mm.bucket||'미상'} | pre-profit ${mm.pp?'예(적자·현금소각)':'아니오(흑자)'} | 현재 비중 ${wt} | 수익률 ${ret}
+[테제] ${dd.thesis||'미정의'}
+[약세 시나리오] ${dd.bear||'미정의'}
+[추적 지표] ${dd.watch||'미정의'}
+[킬 트리거] ${killDef||'미정의'}
+[다음 실적] ${er.date||'미정'} ${er.note?'— '+er.note:''}
+[오늘] ${todayStr}`;
+    const prompt=`${EXPERT_LENS}
+
+${ctx}
+
+누군가 "${tk} 사도 되냐, 얼마나, 언제 사고팔지, 왜, 이벤트에 어떻게 움직이는지" 물었다. 추천(매수/매도/보유 권유) 대신 본인이 스스로 판단할 '재료'를 주는 5문 답변을 작성하라. 단정적 권유 절대 금지 — 결론은 "내 판단" 또는 "이 조건이면 검토 / 이 신호면 보류" 형태.
+
+각 섹션을 정확히 아래 머리말로 시작(머리말 외 다른 제목·번호·인사말 금지):
+[Q1] (사도 되나) 단계·테제 검증 여부·밸류에이션 안전마진을 근거로 "어떤 조건이 맞으면 검토할 만하고, 어떤 신호가 뜨면 보류"인지 체크리스트. yes/no 단정 금지.
+[Q2] (얼마나) 비중 원칙 — 단계가 낮거나 pre-profit이면 소액, 검증될수록 증량. "전체 자산 대비 정확한 %는 본인 리스크 허용도에 달렸다"를 명시하고 일반 가이드만.
+[Q3] (언제 사고 파나) 매수는 분할 진입 + 매수 촉매, 매도는 킬라인(테제 붕괴)·수익실현(과열·목표가 도달)·타임버킷. 특정 날짜 단정 대신 "이 신호 뜨면".
+[Q4] (왜) 뭘로 돈 버나 + 해자 + 자금줄. 그리고 반대편(약세 시나리오)도 동급 분량으로.
+[Q5] (이벤트 반응) 다음 실적·금리·매크로·섹터 이벤트별로 주가가 어떻게 움직일지 1~3차 파급과 비대칭(서프라이즈 vs 미스).
+
+규칙: 한국어. 각 섹션 3~5개 짧은 불릿. 군더더기·서론 금지. 별표·# 등 마크다운 기호 금지. 혼합문자(키릴·한자·가나) 금지.`;
+    try{
+      const txt=await callLLM(prompt,1600);
+      const clean=(typeof _cleanLang==='function')?_cleanLang(txt):txt;
+      const parts={};
+      const re=/\[Q([1-5])\]\s*([\s\S]*?)(?=\[Q[1-5]\]|$)/g;let m;
+      while((m=re.exec(clean))!==null){parts['Q'+m[1]]=m[2].trim();}
+      QS.forEach(s=>{
+        const e=document.getElementById('adv-out-'+s.key);if(!e)return;
+        const body=parts[s.key];
+        e.innerHTML=body?fmtPMBullets(body):'<span style="color:#f87171">⚠ 이 항목 생성 실패 — 다시 시도</span>';
+        e.style.color='#94a3b8';
+      });
+    }catch(e){
+      QS.forEach(s=>{const el=document.getElementById('adv-out-'+s.key);if(el)el.innerHTML='<span style="color:#f87171">⚠ '+e.message+'</span>';});
+    }
+  };
+
+  window.addEventListener('load',function(){setTimeout(function(){
+    injectTab();
+    ['switchTab','sxShow','gsShow','pipeShow','geoShow'].forEach(fn=>{
+      if(typeof window[fn]==='function'){const _o=window[fn];window[fn]=function(){const e=document.getElementById('tab-content-11');if(e)e.style.display='none';const t=document.getElementById('tab-11');if(t)t.classList.remove('tab-active');return _o.apply(this,arguments);};}
+    });
+  },600);});
 })();
 </script>
 </body>

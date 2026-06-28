@@ -6,7 +6,7 @@
 <title>JACK1 • 미국주식 포트폴리오</title>
 <script>
 /* 자동 버전 갱신 — 패치 배포 시 고객 브라우저가 자동으로 최신본 로드 */
-const APP_VERSION='2026-06-27-16';
+const APP_VERSION='2026-06-27-20';
 (function(){try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{if(d&&d.v&&d.v!==APP_VERSION&&!/[?&]v=/.test(location.search)){location.replace(location.pathname+'?v='+encodeURIComponent(d.v));}}).catch(function(){});}catch(e){}})();
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -277,6 +277,21 @@ window.addEventListener('load',function(){ if(typeof PROXY_URL!=='undefined'&&PR
       <table><thead><tr><th>티커</th><th>섹터</th><th>수량</th><th>매수가</th><th>현재가</th><th>평가금액</th><th>수익률</th><th>비중</th><th></th></tr></thead>
       <tbody id="holdingsTable"><tr><td colspan="9" style="text-align:center;color:#475569;padding:40px 0;font-size:13px">보유 종목이 없습니다.</td></tr></tbody></table>
     </div>
+  </div>
+
+  <!-- 일일 손익 캘린더 -->
+  <div class="glass" style="border-radius:18px;padding:20px 22px;margin-top:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px">
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700">📅 일일 손익 캘린더</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="changePnlMonth(-1)" class="btn-ghost" style="padding:5px 11px">◀</button>
+        <span id="pnl-month" class="mono" style="font-size:13px;color:#94a3b8;min-width:80px;text-align:center"></span>
+        <button onclick="changePnlMonth(1)" class="btn-ghost" style="padding:5px 11px">▶</button>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:12px">실시간 시세로 매일 손익을 자동 기록 — 앱을 연 날부터 쌓입니다. 날짜 클릭 → 종목별 기여 + AI 사유 보고(추정).</div>
+    <div id="pnl-cal"></div>
+    <div id="pnl-day" style="margin-top:14px"></div>
   </div>
 
   <!-- Watchlist -->
@@ -1844,6 +1859,7 @@ async function refreshAllPrices(){
     }catch(e){}
     await new Promise(res=>setTimeout(res,150));
   }
+  if(okCount)recordDailySnapshot();
   saveData();renderAll();
   lu.textContent=okCount?`방금 업데이트 (실시간 ${okCount}/${portfolio.length}종목)`:'⚠ 실시간 조회 실패 — 기존 가격 유지 (Finnhub 키 등록 권장)';
   setTimeout(()=>icon.classList.remove('fa-spin'),400);
@@ -1953,7 +1969,8 @@ function renderHoldingsTable(){
     const mm=stagemeta[h.ticker]||{};
     const stage=+mm.stage||0;
     const sc=SC_H[stage];
-    const stagePill=`<span style="display:inline-block;padding:1px 6px;border-radius:5px;font-size:9px;font-weight:700;background:${sc}22;color:${sc};border:1px solid ${sc}44;vertical-align:middle;margin-left:4px">${stage}단계</span>`;
+    const _sw=(mm.stageWhy||'').toString().replace(/"/g,'&quot;');
+    const stagePill=`<span title="${_sw?'단계 근거: '+_sw:SN_H[stage]+' 단계'}" style="display:inline-block;padding:1px 6px;border-radius:5px;font-size:9px;font-weight:700;background:${sc}22;color:${sc};border:1px solid ${sc}44;vertical-align:middle;margin-left:4px;cursor:help">${stage}단계${_sw?' ⓘ':''}</span>`;
     const killPill=mm.kill?`<span style="display:inline-block;padding:1px 6px;border-radius:5px;font-size:9px;font-weight:700;background:rgba(245,96,77,.18);color:#f5604d;border:1px solid rgba(245,96,77,.3);vertical-align:middle;margin-left:3px">🔴킬</span>`:'';
     const _erH=typeof EARN_MAP_R!=='undefined'?EARN_MAP_R[h.ticker]:null;
     const _ddH=_erH?Math.max(0,Math.round((new Date(_erH.date)-new Date())/864e5)):null;
@@ -2977,10 +2994,11 @@ function renderInsightBase(){
     const stage=+mm.stage||0;
     const isKill=!!mm.kill;
     const stageColor=SC[stage];
-    /* 버킷 배지 */
-    const bucketYear=mm.bucket||'';
-    const bucketClr=bucketYear==='2027'?'#10b981':bucketYear==='2028'?'#c9a84c':'#f87171';
-    const bucketBadge=bucketYear?`<span style="display:inline-block;padding:2px 9px;border-radius:7px;font-size:10px;font-weight:800;background:${bucketClr}18;color:${bucketClr};border:1px solid ${bucketClr}40;letter-spacing:.05em">${bucketYear} TARGET</span>`:'';
+    /* 버킷 배지 — 버킷이 'YYYY Qn' 형식이므로 연도만 추출해 색상 매칭 */
+    const bucketRaw=mm.bucket||'';
+    const bucketYr=(bucketRaw.match(/\d{4}/)||[''])[0];
+    const bucketClr=bucketYr==='2027'?'#10b981':bucketYr==='2028'?'#c9a84c':bucketYr?'#f87171':'#64748b';
+    const bucketBadge=bucketRaw?`<span style="display:inline-block;padding:2px 9px;border-radius:7px;font-size:10px;font-weight:800;background:${bucketClr}18;color:${bucketClr};border:1px solid ${bucketClr}40;letter-spacing:.05em">${bucketRaw} TARGET</span>`:'';
     const killBadge=isKill?`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(245,96,77,.15);border:1px solid rgba(245,96,77,.35);border-radius:7px;padding:2px 8px;font-size:10px;font-weight:700;color:#f5604d"><span style="width:6px;height:6px;border-radius:50%;background:#f5604d;box-shadow:0 0 6px #f5604d;animation:pulse2 2s infinite"></span>킬신호</span>`:'';
     const stageBadge=`<span style="display:inline-block;padding:2px 8px;border-radius:7px;font-size:10px;font-weight:700;background:${stageColor}22;color:${stageColor};border:1px solid ${stageColor}44">${stage}단계·${STAGE_NAMES[stage]}</span>`;
     const moneyBadge=mm.money?`<span style="display:inline-block;padding:2px 8px;border-radius:7px;font-size:10px;background:rgba(74,158,255,.1);color:#4a9eff;border:1px solid rgba(74,158,255,.2)">${mm.money}</span>`:'';
@@ -2991,7 +3009,7 @@ function renderInsightBase(){
       <span style="font-size:9px;font-weight:700;color:${bucketClr};letter-spacing:.08em">THESIS</span><br>${_tbH.thesis}</div>`:'';
     const milestoneRow=_tbH.milestone?`<div style="font-size:10px;color:#94a3b8;margin-top:4px;display:flex;align-items:flex-start;gap:5px"><span style="color:${bucketClr};font-weight:700;white-space:nowrap">▶ 마일스톤</span><span>${_tbH.milestone}</span></div>`:'';
     const wt=getWeight(h);
-    return`<div class="glass card-hover" style="border-radius:18px;padding:24px${isKill?';border:1px solid rgba(245,96,77,.3)':bucketYear?`;border-top:2px solid ${bucketClr}40`:''};position:relative;overflow:hidden">
+    return`<div class="glass card-hover" style="border-radius:18px;padding:24px${isKill?';border:1px solid rgba(245,96,77,.3)':bucketRaw?`;border-top:2px solid ${bucketClr}40`:''};position:relative;overflow:hidden">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px">
@@ -2999,6 +3017,7 @@ function renderInsightBase(){
             ${bucketBadge}${killBadge}
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:3px">${stageBadge}${moneyBadge}</div>
+          ${mm.stageWhy?`<div style="font-size:10px;color:#64748b;line-height:1.5;margin:3px 0 2px;display:flex;gap:4px"><span style="color:${stageColor};font-weight:700;white-space:nowrap">단계 근거</span><span>${mm.stageWhy}</span></div>`:''}
           <div style="font-size:11px;color:#475569">${h.sector} · 비중 <span class="mono" style="color:#e2e8f0">${wt.toFixed(1)}%</span></div>
           ${(()=>{const ne=getNextEarnings(h.ticker);if(!ne)return'';const dc=ne.days<=7?'#f87171':ne.days<=30?'#fbbf24':'#64748b';return`<div style="font-size:10px;margin-top:3px">📅 다음 실적 <span class="mono" style="color:${dc};font-weight:700">${ne.days>=0?'D-'+ne.days:'완료'}</span> <span style="color:#475569">${ne.date} — ${ne.note}</span></div>`;})()}
           ${thesisRow}${milestoneRow}
@@ -3945,7 +3964,8 @@ function renderEarnUpdateChecklist(){
       const key=tk+'_'+e.date;
       const st=state[key]||{};
       const tbh=_tb.find(x=>x.ticker===tk)||{};
-      const bClr=e.bucket==='2027'?'#10b981':e.bucket==='2028'?'#c9a84c':'#f87171';
+      const _yb=(((getStagemeta()[tk]||{}).bucket||'').match(/\d{4}/)||[''])[0];
+      const bClr=_yb==='2027'?'#10b981':_yb==='2028'?'#c9a84c':_yb?'#f87171':'#64748b';
       const items=[
         {k:'watch',label:'① 관전포인트 판정',desc:e.note||'핵심 지표 확인'},
         {k:'kill',label:'② 킬신호 점검',desc:killDefs[tk]||'킬 조건 대조'},
@@ -5584,12 +5604,79 @@ function renderVCTimeline(){
 }
 function initVCTab(){ selectTheme('ai'); renderVCTimeline(); }
 
+/* ─── 일일 손익 캘린더 ─── */
+let pnlMonth=new Date().toISOString().slice(0,7); // YYYY-MM
+function pnlHist(){try{return JSON.parse(localStorage.getItem('j1_pnl_hist')||'{}');}catch(e){return{};}}
+function recordDailySnapshot(){
+  if(!portfolio.length)return;
+  const tv=totalValue();if(tv<=0)return;
+  let dp=0,usd=0;const byTicker={};
+  portfolio.forEach(h=>{const w=getWeight(h)/100;const d=+h.dailyChg||0;dp+=w*d;usd+=(h.price*h.qty)*d/100;byTicker[h.ticker]=Math.round(d*100)/100;});
+  const h=pnlHist();const today=new Date().toISOString().slice(0,10);
+  h[today]={dp:Math.round(dp*100)/100,usd:Math.round(usd*100)/100,value:Math.round(tv),byTicker};
+  const keys=Object.keys(h).sort();while(keys.length>90){delete h[keys.shift()];}
+  localStorage.setItem('j1_pnl_hist',JSON.stringify(h));
+}
+function changePnlMonth(d){const [y,m]=pnlMonth.split('-').map(Number);const dt=new Date(y,m-1+d,1);pnlMonth=dt.toISOString().slice(0,7);renderPnlCalendar();document.getElementById('pnl-day').innerHTML='';}
+function renderPnlCalendar(){
+  const cal=document.getElementById('pnl-cal');if(!cal)return;
+  const ml=document.getElementById('pnl-month');if(ml)ml.textContent=pnlMonth;
+  const h=pnlHist();const [y,m]=pnlMonth.split('-').map(Number);
+  const first=new Date(y,m-1,1),start=first.getDay(),days=new Date(y,m,0).getDate();
+  const dow=['일','월','화','수','목','금','토'];
+  let html='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">';
+  dow.forEach((d,i)=>html+=`<div style="text-align:center;font-size:10px;color:${i===0?'#f87171':i===6?'#4a9eff':'#475569'};padding:2px">${d}</div>`);
+  for(let i=0;i<start;i++)html+='<div></div>';
+  for(let d=1;d<=days;d++){
+    const ds=`${pnlMonth}-${String(d).padStart(2,'0')}`;const rec=h[ds];
+    if(rec){const pos=rec.dp>=0;const bg=pos?'rgba(16,185,129,.13)':'rgba(248,113,113,.13)';const c=pos?'#10b981':'#f87171';
+      html+=`<div onclick="showPnlDay('${ds}')" style="cursor:pointer;background:${bg};border:1px solid ${c}33;border-radius:8px;padding:6px 4px;text-align:center;min-height:46px">
+        <div style="font-size:10px;color:#64748b">${d}</div><div class="mono" style="font-size:12px;font-weight:700;color:${c}">${pos?'+':''}${rec.dp}%</div>${rec.usd!=null?`<div class="mono" style="font-size:9px;color:${c}">${rec.usd>0?'+':''}$${Math.abs(rec.usd)>=1000?(rec.usd/1000).toFixed(1)+'k':rec.usd}</div>`:''}</div>`;
+    } else {
+      html+=`<div style="background:rgba(255,255,255,.02);border-radius:8px;padding:6px 4px;text-align:center;min-height:46px"><div style="font-size:10px;color:#334155">${d}</div></div>`;
+    }
+  }
+  html+='</div>';
+  const cnt=Object.keys(h).filter(k=>k.startsWith(pnlMonth)).length;
+  if(!cnt)html+='<div style="font-size:11px;color:#475569;text-align:center;margin-top:10px">이 달 기록 없음 — 실시간 시세가 갱신되면 오늘 손익부터 기록됩니다.</div>';
+  cal.innerHTML=html;
+}
+function showPnlDay(ds){
+  const rec=pnlHist()[ds];const el=document.getElementById('pnl-day');if(!rec){el.innerHTML='';return;}
+  const arr=Object.entries(rec.byTicker).sort((a,b)=>b[1]-a[1]);
+  const pos=rec.dp>=0;
+  el.innerHTML=`<div class="glass" style="border-radius:12px;padding:14px 16px;border:1px solid ${pos?'rgba(16,185,129,.25)':'rgba(248,113,113,.25)'}">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+      <span style="font-weight:700;font-size:13px">${ds} 일일 손익 <span class="mono" style="color:${pos?'#10b981':'#f87171'}">${pos?'+':''}${rec.dp}%${rec.usd!=null?` · ${rec.usd>0?'+':''}$${Math.round(rec.usd).toLocaleString()}`:''}</span></span>
+      <button onclick="pnlReasonAI('${ds}')" class="btn-ghost" style="font-size:11px;padding:6px 12px;border-color:rgba(201,168,76,.3);color:#c9a84c"><i class="fa-solid fa-wand-magic-sparkles"></i> AI 사유 보고</button>
+    </div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:6px">종목별 기여(당일 %)</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">${arr.map(([tk,d])=>`<span class="mono" style="font-size:11px;padding:2px 8px;border-radius:5px;background:rgba(255,255,255,.05);color:${d>=0?'#10b981':'#f87171'}">${tk} ${d>=0?'+':''}${d}%</span>`).join('')}</div>
+    <div id="pnl-reason" style="margin-top:10px;font-size:12px;line-height:1.7;color:#94a3b8"></div>
+  </div>`;
+}
+async function pnlReasonAI(ds){
+  if(!aiReady()){alert('AI를 사용할 수 없습니다.');return;}
+  const rec=pnlHist()[ds];if(!rec)return;
+  const rb=document.getElementById('pnl-reason');rb.innerHTML='분석 중...';
+  const movers=Object.entries(rec.byTicker).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,6).map(([tk,d])=>`${tk} ${d>=0?'+':''}${d}%`).join(', ');
+  try{
+    const txt=await callLLM(`${ds} 내 포트폴리오 일일 손익 ${rec.dp>=0?'+':''}${rec.dp}%. 종목별 당일 변동: ${movers}.
+이 손익이 발생한 가능한 사유를 한국어로 추정·정리(매매·투자권유 아님, 사후 추정):
+- 거시 요인: (그 무렵 금리·CPI·FOMC·유가·달러 등 중 영향 가능성)
+- 종목/섹터 요인: (가장 크게 움직인 종목의 가능한 촉매 — 실적·뉴스·섹터 로테이션)
+- 한 줄 총평: 이 날 손익의 핵심 동인 추정
+정확한 그날 뉴스는 모를 수 있으니 "추정"임을 전제. 3~5줄, 마크다운·별표 없이.`,700);
+    rb.innerHTML='<div style="font-size:10px;color:#c9a84c;font-weight:700;margin-bottom:5px">🔎 AI 사유 보고 (추정)</div>'+(typeof fmtPMBullets==='function'?fmtPMBullets(txt):txt.replace(/\n/g,'<br>'));
+  }catch(e){rb.innerHTML=`<div style="color:#f87171">⚠ ${e.message}</div>`;}
+}
+
 /* ─── RENDER ALL ─── */
 function renderAll(){
   renderSummary();renderHoldingsTable();renderChart();renderWatchlist();
   if(document.getElementById('tab-content-2').style.display!=='none')renderRebalancePlanner();
   if(document.getElementById('tab-content-3').style.display!=='none')renderMacroEvents();
-  renderOnboard();
+  renderPnlCalendar();renderOnboard();
 }
 
 /* ─── 온보딩: 보유 종목 3~8개 입력 ─── */

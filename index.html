@@ -6,7 +6,7 @@
 <title>JACK1 LENS · 종목 입력 → 7대 프레임 분석</title>
 <script>
 /* 자동 버전 갱신 — 패치 배포 시 고객 브라우저가 자동으로 최신본 로드 */
-const APP_VERSION='2026-06-27-20';
+const APP_VERSION='2026-06-27-24';
 (function(){try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(function(d){if(d&&d.v&&d.v!==APP_VERSION&&localStorage.getItem('j1lens_rv')!==d.v){localStorage.setItem('j1lens_rv',d.v);location.replace(location.pathname+'?v='+encodeURIComponent(d.v)+'_'+Date.now());}}).catch(function(){});}catch(e){}})();
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -82,7 +82,7 @@ th{color:#475569;font-size:10px;font-weight:600;text-transform:uppercase}
       <div style="display:flex;flex-direction:column;gap:10px">
         <div style="display:flex;gap:10px"><span style="flex:0 0 22px;height:22px;border-radius:6px;background:rgba(16,185,129,.15);color:#10b981;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center">1</span><div><b style="color:#e2e8f0">종목 입력</b> — 보유(또는 관심) 종목을 1~10개. 미국·한국(삼성전자·005930) 다 됩니다. <b>비중%</b>나 <b>금액</b> 중 편한 걸로, <b>원화/달러</b> 선택. (비중 몰라도 티커만 넣어도 OK)</div></div>
         <div style="display:flex;gap:10px"><span style="flex:0 0 22px;height:22px;border-radius:6px;background:rgba(16,185,129,.15);color:#10b981;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center">2</span><div><b style="color:#e2e8f0">"7대 프레임 분석"</b> 클릭 → 7가지를 표·카드로 정리: ①<b>단계</b>(0~4, 지금 어느 구간) ②<b>타임버킷</b>(언제 빛날 종목) ③<b>자금줄</b>(같은 돈줄=같이 움직임) ④<b>거시/테마</b> ⑤<b>어닝</b>(실적일·볼 것) ⑥<b>밸류체인</b>(병목 위치) ⑦<b>비중·리밸런싱</b></div></div>
-        <div style="display:flex;gap:10px"><span style="flex:0 0 22px;height:22px;border-radius:6px;background:rgba(201,168,76,.15);color:#c9a84c;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center">3</span><div><b style="color:#e2e8f0">"대시보드 생성"</b> → 내 종목 전용 대시보드(11개 메뉴)로 더 깊게 탐색</div></div>
+        <div style="display:flex;gap:10px"><span style="flex:0 0 22px;height:22px;border-radius:6px;background:rgba(201,168,76,.15);color:#c9a84c;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center">3</span><div><b style="color:#e2e8f0">"대시보드 생성"</b> → 내 종목 전용 대시보드(종목인사이트·전략단계·어닝·밸류체인·5문답변 등)로 더 깊게 탐색</div></div>
       </div>
       <div style="background:rgba(16,185,129,.06);border-left:3px solid #10b981;border-radius:8px;padding:11px 13px;margin-top:14px;color:#e2e8f0;font-size:12px">
         <b style="color:#10b981">꼭 알아두기:</b> 이건 <b>추천이 아니라 "지금 어디쯤인지" 보여주는 지도</b>입니다. <b style="color:#f87171">단계 4=나쁜 회사가 아니라 가격 과열</b>, 0=부실이 아니라 관찰 중. <b>자금줄</b>=같은 거시에 묶여 함께 움직이는 그룹. 매수·매도·모든 판단과 책임은 본인.
@@ -369,7 +369,7 @@ function renderTable(parent,n,title,txt){
 async function buildDashboard(){
   const valid=window._lensTks||rows.filter(r=>r.tk.trim());
   const err=document.getElementById('buildErr'),btn=document.getElementById('buildBtn');
-  if(!valid||valid.length<3){err.textContent='먼저 7대 분석을 실행하세요.';return;}
+  if(!valid||valid.length<1){err.textContent='먼저 종목을 입력하고 7대 분석을 실행하세요.';return;}
   if(!aiReady()){openKey();return;}
   btn.disabled=true;err.textContent='';btn.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span> 대시보드 데이터 생성 중...';
   const list=valid.map(r=>r.tk).join('·');

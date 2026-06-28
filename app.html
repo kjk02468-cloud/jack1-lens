@@ -6,7 +6,7 @@
 <title>JACK1 • 미국주식 포트폴리오</title>
 <script>
 /* 자동 버전 갱신 — 패치 배포 시 고객 브라우저가 자동으로 최신본 로드 */
-const APP_VERSION='2026-06-27-20';
+const APP_VERSION='2026-06-27-24';
 (function(){try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{if(d&&d.v&&d.v!==APP_VERSION&&!/[?&]v=/.test(location.search)){location.replace(location.pathname+'?v='+encodeURIComponent(d.v));}}).catch(function(){});}catch(e){}})();
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -473,7 +473,7 @@ window.addEventListener('load',function(){ if(typeof PROXY_URL!=='undefined'&&PR
   </div>
   <!-- Indicators -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin:-4px 0 10px;flex-wrap:wrap;gap:6px">
-    <div id="macro-ind-status" style="font-size:11px;color:#475569">⚠ 참고용 수치 — Finnhub 키 등록 시 자동 갱신</div>
+    <div id="macro-ind-status" style="font-size:11px;color:#475569">실시간 지수 — 탭 열면 자동 조회</div>
     <button onclick="refreshMacroIndicators()" class="btn-ghost" style="font-size:11px;padding:4px 12px"><i class="fa-solid fa-arrows-rotate"></i> 지표 갱신</button>
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:20px">
@@ -1861,7 +1861,7 @@ async function refreshAllPrices(){
   }
   if(okCount)recordDailySnapshot();
   saveData();renderAll();
-  lu.textContent=okCount?`방금 업데이트 (실시간 ${okCount}/${portfolio.length}종목)`:'⚠ 실시간 조회 실패 — 기존 가격 유지 (Finnhub 키 등록 권장)';
+  lu.textContent=okCount?`방금 업데이트 (실시간 ${okCount}/${portfolio.length}종목)`:'⚠ 실시간 조회 일시 실패 — 기존 가격 유지 (장 마감·네트워크 영향, 잠시 후 자동 재시도)';
   setTimeout(()=>icon.classList.remove('fa-spin'),400);
 }
 
@@ -3752,8 +3752,9 @@ function updateFinnhubUI(){
 
 /* ─── FETCH REAL-TIME PRICE (Finnhub → Yahoo fallback) ─── */
 async function fetchRealtimePrice(ticker){
-  /* 1순위: Finnhub (실시간) */
-  if(finnhubKey){
+  const isKR=/^\d{6}$/.test((ticker||'').trim()); /* 한국 6자리 종목코드 */
+  /* 1순위: Finnhub (실시간) — 미국 종목만 (무료 등급은 KRX 미지원) */
+  if(finnhubKey&&!isKR){
     try{
       const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${finnhubKey}`,
         {signal:AbortSignal.timeout(5000)});
@@ -3761,21 +3762,22 @@ async function fetchRealtimePrice(ticker){
       if(d.c&&d.c>0)return{price:d.c,change:d.d,changePct:d.dp,source:'Finnhub 실시간'};
     }catch(e){}
   }
-  /* 2순위: Yahoo Finance CORS 프록시 */
-  const yfUrl=`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
-  const proxies=[
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(yfUrl)}`,
-    `https://corsproxy.io/?${encodeURIComponent(yfUrl)}`
-  ];
-  for(const proxy of proxies){
-    try{
-      const r=await fetch(proxy,{signal:AbortSignal.timeout(6000)});
-      if(!r.ok)continue;
-      const d=await r.json();
-      const meta=d?.chart?.result?.[0]?.meta;
-      const p=meta?.regularMarketPrice||meta?.previousClose;
-      if(p&&p>0)return{price:p,change:null,changePct:null,source:'Yahoo Finance'};
-    }catch(e){continue;}
+  /* 2순위: Yahoo Finance CORS 프록시 — 한국 종목은 .KS(코스피)·.KQ(코스닥) 접미사 시도 */
+  const syms=isKR?[ticker+'.KS',ticker+'.KQ']:[ticker];
+  const proxyOf=u=>[`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,`https://corsproxy.io/?${encodeURIComponent(u)}`];
+  for(const sym of syms){
+    const yfUrl=`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`;
+    for(const proxy of proxyOf(yfUrl)){
+      try{
+        const r=await fetch(proxy,{signal:AbortSignal.timeout(6000)});
+        if(!r.ok)continue;
+        const d=await r.json();
+        const meta=d?.chart?.result?.[0]?.meta;
+        const p=meta?.regularMarketPrice||meta?.previousClose;
+        const pc=meta?.previousClose;
+        if(p&&p>0)return{price:p,change:pc?p-pc:null,changePct:pc?((p-pc)/pc*100):null,source:'Yahoo Finance'};
+      }catch(e){continue;}
+    }
   }
   return null;
 }
@@ -5726,7 +5728,7 @@ function switchTab(idx){
   }
   if(idx===1)renderInsightBase();
   if(idx===2)renderRebalancePlanner();
-  if(idx===3){renderMacroEvents();renderMoneyMap();}
+  if(idx===3){renderMacroEvents();renderMoneyMap();if(finnhubKey&&typeof refreshMacroIndicators==='function')refreshMacroIndicators();}
   if(idx===6)renderChainMap();
   if(idx===4)initEarningsTab();
   if(idx===5)initResearchTab();

@@ -6,7 +6,7 @@
 <title>JACK1 LENS · 종목 입력 → 7대 프레임 분석</title>
 <script>
 /* 자동 버전 갱신 — 패치 배포 시 고객 브라우저가 자동으로 최신본 로드 */
-const APP_VERSION='2026-06-27-36';
+const APP_VERSION='2026-06-27-37';
 (function(){try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(function(d){if(d&&d.v&&d.v!==APP_VERSION&&localStorage.getItem('j1lens_rv')!==d.v){localStorage.setItem('j1lens_rv',d.v);location.replace(location.pathname+'?v='+encodeURIComponent(d.v)+'_'+Date.now());}}).catch(function(){});}catch(e){}})();
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -88,6 +88,27 @@ th{color:#475569;font-size:10px;font-weight:600;text-transform:uppercase}
         <b style="color:#10b981">꼭 알아두기:</b> 이건 <b>추천이 아니라 "지금 어디쯤인지" 보여주는 지도</b>입니다. <b style="color:#f87171">단계 4=나쁜 회사가 아니라 가격 과열</b>, 0=부실이 아니라 관찰 중. <b>자금줄</b>=같은 거시에 묶여 함께 움직이는 그룹. 매수·매도·모든 판단과 책임은 본인.
       </div>
       <div style="font-size:11px;color:#475569;margin-top:10px">🔒 입력 데이터는 본인 브라우저에만 저장 · 무료 베타 · 분석·교육용 도구</div>
+    </div>
+  </div>
+
+  <!-- TEAM JACK1 투자철학 -->
+  <div class="glass sec" style="border:1px solid rgba(201,168,76,.22)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+      <span style="font-size:18px">🧭</span>
+      <h3 style="margin:0">TEAM JACK1 투자철학</h3>
+      <span style="font-size:10px;color:#475569">왜 이렇게 분석하는가</span>
+    </div>
+    <div class="sub" style="margin-bottom:14px">우리는 종목을 "추천"하지 않습니다. 대신 <b style="color:#c9a84c">월가 PM이 쓰는 판단의 틀</b>을 그대로 당신 종목에 적용해, 스스로 결정할 재료를 드립니다.</div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <div style="display:flex;gap:10px"><span style="flex:0 0 24px;height:24px;border-radius:7px;background:rgba(201,168,76,.15);color:#c9a84c;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center">1</span><div style="font-size:13px;color:#94a3b8;line-height:1.6"><b style="color:#e2e8f0">돈의 흐름을 따라간다.</b> 주가가 아니라 <b>자금줄·병목·가격결정력</b>을 본다. 돈이 고이는 길목(병목)에 가격을 올릴 힘이 생기고, 거기서 초과수익이 난다.</div></div>
+      <div style="display:flex;gap:10px"><span style="flex:0 0 24px;height:24px;border-radius:7px;background:rgba(201,168,76,.15);color:#c9a84c;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center">2</span><div style="font-size:13px;color:#94a3b8;line-height:1.6"><b style="color:#e2e8f0">"좋은 회사"와 "지금 단계"를 분리한다.</b> 0~4단계로 <b>투자 논리가 얼마나 검증됐고 가격에 얼마나 실렸는지</b>를 본다. 4단계 과열은 나쁜 회사가 아니라 비싼 가격일 뿐.</div></div>
+      <div style="display:flex;gap:10px"><span style="flex:0 0 24px;height:24px;border-radius:7px;background:rgba(16,185,129,.15);color:#10b981;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center">3</span><div style="font-size:13px;color:#94a3b8;line-height:1.6"><b style="color:#e2e8f0">먼저, 잃지 않는다.</b> 모건 하우절·김승호. 장밋빛 시나리오를 그린 만큼 <b>파국 시나리오(테제 붕괴·킬 신호)</b>도 같은 무게로 본다. 안 잃는 게 더 버는 것보다 먼저다.</div></div>
+      <div style="display:flex;gap:10px"><span style="flex:0 0 24px;height:24px;border-radius:7px;background:rgba(74,158,255,.15);color:#4a9eff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center">4</span><div style="font-size:13px;color:#94a3b8;line-height:1.6"><b style="color:#e2e8f0">시장과 다르게 본다.</b> 하워드 막스 2차 사고 — 컨센서스와 같은 결론이면 분석이 아니라 복붙. "시장이 아직 모르는 한 가지"를 찾는다. 사이클은 반드시 되돌아온다.</div></div>
+      <div style="display:flex;gap:10px"><span style="flex:0 0 24px;height:24px;border-radius:7px;background:rgba(167,139,250,.15);color:#a78bfa;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center">5</span><div style="font-size:13px;color:#94a3b8;line-height:1.6"><b style="color:#e2e8f0">팔 이유를 미리 적어둔다.</b> 매수보다 매도가 어렵다. 종목마다 <b>"이 신호 뜨면 줄인다/판다"(킬라인·수확)</b>를 미리 정의해, 환희와 공포가 아닌 사실 변화로 움직인다.</div></div>
+      <div style="display:flex;gap:10px"><span style="flex:0 0 24px;height:24px;border-radius:7px;background:rgba(248,113,113,.12);color:#f87171;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center">6</span><div style="font-size:13px;color:#94a3b8;line-height:1.6"><b style="color:#e2e8f0">거장의 지혜를 충돌 없이 통합한다.</b> 린치(성장·PEG)·그레이엄(안전마진)·피셔(질적 성장)·막스(사이클)·하우절·김승호 — 서로 부딪히면 <b>"안 잃기"가 이긴다.</b></div></div>
+    </div>
+    <div style="background:rgba(16,185,129,.06);border-left:3px solid #10b981;border-radius:8px;padding:11px 13px;margin-top:14px;font-size:12px;color:#e2e8f0;line-height:1.6">
+      ⚖ <b>우리가 안 하는 것:</b> 매수·매도 권유, "이거 사세요" 단정, 수익 보장. <b>우리가 하는 것:</b> 같은 틀을 일관되게 적용해 당신이 더 나은 질문을 던지게 돕는 것. <span style="color:#64748b">— 모든 결정과 책임은 본인에게.</span>
     </div>
   </div>
 
